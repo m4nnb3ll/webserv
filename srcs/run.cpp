@@ -1,4 +1,5 @@
 #include "Config.hpp"
+#include "Requests.hpp"
 
 void Config::_readRequest(int sd)
 {
@@ -42,9 +43,11 @@ void Config::run()
 	Printers::print_serversSockets(_portToServersSocket);
 
 	ServersSocket* sS;
+	std::map<int, Client *>					ClientsInformation;
 
 	while (!g_sigint)
 	{
+		Client *_Client = new Client();
 		if ((poll(_pollFds.data(), _pollFds.size(), -1)) <= 0)
 			continue;
 		for (size_t i = 0; i < _pollFds.size(); i++)
@@ -70,10 +73,16 @@ void Config::run()
 					_addPollfd(client_fd, POLLIN | POLLOUT);
 				}
 				else // read request from client
+				{
 					_readRequest(sd);
+					HandleRequest(_readStr, sd, &ClientsInformation, _Client);
+					_readStr = "";
+				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
+			{
 				_sendResponse(sd);
+			}
 		}
 	}
 }
