@@ -9,7 +9,7 @@ ServersSocket::ServersSocket(Server *s)
 ServersSocket::~ServersSocket()
 {
 	for (size_t i = 0; i < _servers.size(); i++)
-		delete _servers[i];
+		delete _servers[i];//heap-use-after-free!
 }
 
 void	ServersSocket::setFd(int sd)

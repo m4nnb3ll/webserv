@@ -4,6 +4,8 @@
 #include "Server.hpp"
 #include "Printers.hpp"
 
+#include "Client.hpp"//added by mbouyahy
+
 class	Printers;
 class	ServersSocket;
 
@@ -19,6 +21,7 @@ private:
 	std::ifstream							_configFile;
 	std::map<std::string, ServersSocket*>	_portToServersSocket;
 	std::map<int, ServersSocket*>			_sdToServersSocket;//sd: socket descriptor
+	// std::map<int, Client*>					_sdToClients;
 	std::vector<struct pollfd>				_pollFds;
 
 	std::string								_readStr;
@@ -43,3 +46,16 @@ private:
 	void			_parseServerNames(std::istringstream&, Server*);
 	void			_setRoot(std::istringstream&, Server*);
 };
+
+// std::map<int, Client*>					_sdToClients;
+
+
+// class	Client
+// {
+// 	_readStr;
+// 	Request;
+// 	Response;
+// };
+
+
+
