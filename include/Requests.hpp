@@ -6,7 +6,7 @@
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/21 21:42:35 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/22 12:44:15 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ class Requests
         std::string                                                 RequestURI;
         std::string                                                 ContentType;
         std::string                                                 Connection;
+        std::string                                                 Query;
     public:
         Requests();
         ~Requests();
@@ -67,6 +68,7 @@ class Requests
         std::string                                                 GetMethod() const;
         std::string                                                 GetContentType() const;
         std::string                                                 GetConnection() const;
+        std::string                                                 GetQuery() const;
         
         //Setters
         void                                                        SetTransferEncoding(std::string value);
@@ -75,6 +77,7 @@ class Requests
         void                                                        SetHTTPVersion(std::string value);
         void                                                        SetMethod(std::string value);
         void                                                        SetConnection(std::string value);
+        void                                                        SetQuery(std::string value);
         void                                                        SetErrorCode(int value);
         void                                                        SetContentLength(int value);
         void                                                        SetContentType(std::string value);
@@ -93,6 +96,7 @@ class Requests
         void                                                        FillRequestURI();
         bool                                                        iSValidURI();
         void                                                        SpecialGetContentType(std::string   Value);
+        void                                                        FillQuery();
 
         //Functions For Testing Only
         void                                                        PrintVectorOfPairs(std::vector<std::pair<std::string, std::string> >    Body);

@@ -6,7 +6,7 @@
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:45:11 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/21 21:44:17 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/22 12:43:53 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ std::string                                         Requests::GetMethod() const 
 
 std::string                                         Requests::GetConnection() const { return (Connection); }
 
+std::string                                         Requests::GetQuery() const { return (Query); }
+
 std::string                                         Requests::GetContentType() const { return (ContentType); };
 
 int                                                 Requests::GetErrorCode() const { return (ErrorCode); }
@@ -64,6 +66,8 @@ void                                                Requests::SetContentType(std
 void                                                Requests::SetContentLength(int value) {ContentLength = value;}
 
 void                                                Requests::SetConnection(std::string value){ Connection = value; }
+
+void                                                Requests::SetQuery(std::string value){ Query = value; }
 
 bool SearchLine(std::string Line, std::string Content)
 {
@@ -287,6 +291,18 @@ void FillBody(Requests *Request, std::string data)
     // Request->PrintVectorOfPairs(Request->GetBody());
 }
 
+void Requests::FillQuery()
+{
+    size_t begin;
+
+    begin = RequestURI.find("?");
+    if (begin <= RequestURI.size())
+    {
+        for(size_t i = begin + 1; i < RequestURI.size(); i++)
+            Query += RequestURI[i];
+    }
+}
+
 Requests *    FillLines(std::vector<std::string>    SingleRequest)
 {
     Requests *Request = new Requests();
@@ -297,6 +313,7 @@ Requests *    FillLines(std::vector<std::string>    SingleRequest)
         Request->Lines = Request->SplitRequest(*SimpleIter);
         Request->FillRequestLine();
         Request->FillRequestURI();
+        Request->FillQuery();
         if (Request->GetMethod() == "POST")
             FillBody(Request, *SimpleIter);
     }
