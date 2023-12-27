@@ -22,6 +22,8 @@ Client::~Client()
 	// delete ClientRequest;
 }
 
+Client::Client(){}
+
 Client::Client(const Client &other){ (void)other; }
 
 Client &Client::operator=(const Client &other)
@@ -45,6 +47,8 @@ void PrintMap(std::__1::map<int, Client *> *_Map)
 		std::cout << "StatusCode : " << iter->second->ClientRequest->GetStatusCode() << std::endl;
 		std::cout << "Connection : " << iter->second->ClientRequest->GetConnection() << std::endl;
 		std::cout << "TransferEncoding : " << iter->second->ClientRequest->GetTransferEncoding() << std::endl;
+		std::cout << "ErrorCode : " << iter->second->ClientRequest->GetErrorCode() << std::endl;
+		std::cout << "Connection : " << iter->second->ClientRequest->GetConnection() << std::endl;
         if (iter->second->ClientRequest->GetMethod() == "POST")
         {
             std::cout << "ContentType : " << iter->second->ClientRequest->GetContentType() << std::endl;

@@ -48,6 +48,7 @@ void Config::run()
 
 	while (!g_sigint)
 	{
+		Client *_Client = new Client();
 		if ((poll(_pollFds.data(), _pollFds.size(), -1)) <= 0)
 			continue;
 		for (size_t i = 0; i < _pollFds.size(); i++)
