@@ -6,14 +6,14 @@
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:23 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/25 18:40:06 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/27 18:44:55 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef Client_HPP
-#define Client_HPP
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
 
-#include "Request.hpp"
+#include "Requests.hpp"
 class Request;
 
 class   Client

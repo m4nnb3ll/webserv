@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.hpp                                       :+:      :+:    :+:   */
+/*   Requests.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/23 18:39:25 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/27 18:45:14 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef Request_HPP
-#define Request_HPP
+#ifndef REQUEST_HPP
+#define REQUEST_HPP
 
 //change the name of file to HttpRequest or the reverse
 #include <iostream>
