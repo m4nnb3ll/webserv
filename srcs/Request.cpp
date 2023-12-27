@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Requests.hpp"
+#include "Request.hpp"
 
 Request::Request()
 {

@@ -1,5 +1,5 @@
 #include "Config.hpp"
-#include "Requests.hpp"
+#include "Request.hpp"
 
 void Config::_readRequest(int sd)
 {
