@@ -6,7 +6,7 @@
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:10 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/27 13:07:34 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/27 19:49:03 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,6 @@ Client::~Client()
 {
 	// delete ClientRequest;
 }
-
-Client::Client(){}
 
 Client::Client(const Client &other){ (void)other; }
 
@@ -47,7 +45,6 @@ void PrintMap(std::__1::map<int, Client *> *_Map)
 		std::cout << "StatusCode : " << iter->second->ClientRequest->GetStatusCode() << std::endl;
 		std::cout << "Connection : " << iter->second->ClientRequest->GetConnection() << std::endl;
 		std::cout << "TransferEncoding : " << iter->second->ClientRequest->GetTransferEncoding() << std::endl;
-		std::cout << "ErrorCode : " << iter->second->ClientRequest->GetErrorCode() << std::endl;
 		std::cout << "Connection : " << iter->second->ClientRequest->GetConnection() << std::endl;
         if (iter->second->ClientRequest->GetMethod() == "POST")
         {
