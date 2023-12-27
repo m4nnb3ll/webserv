@@ -1,5 +1,5 @@
 #include "Config.hpp"
-#include "Requests.hpp"
+#include "Request.hpp"
 
 void Config::_readRequest(int sd)
 {
@@ -20,8 +20,9 @@ void Config::_readRequest(int sd)
 	_readStr += buffer;
 }
 
-void Config::_sendResponse(int sd)
+void Config::_sendResponse(int sd, std::map<int, Client *>  ClientsInformation)
 {
+	(void)ClientsInformation;
 	std::ostringstream	http_response;
 
 	http_response << "HTTP/1.1 200 OK\r\n";
@@ -47,7 +48,6 @@ void Config::run()
 
 	while (!g_sigint)
 	{
-		Client *_Client = new Client();
 		if ((poll(_pollFds.data(), _pollFds.size(), -1)) <= 0)
 			continue;
 		for (size_t i = 0; i < _pollFds.size(); i++)
@@ -75,13 +75,13 @@ void Config::run()
 				else // read request from client
 				{
 					_readRequest(sd);
-					HandleRequest(_readStr, sd, &ClientsInformation, _Client);
+					HandleRequest(_readStr, sd, &ClientsInformation);
 					_readStr = "";
 				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
 			{
-				_sendResponse(sd);
+				_sendResponse(sd, ClientsInformation);
 			}
 		}
 	}

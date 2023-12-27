@@ -36,7 +36,7 @@ private:
 	void			_initSockets();
 	void			_unplugSocket(ServersSocket *sS);
 	void			_readRequest(int sd);
-	void			_sendResponse(int sd);
+	void			_sendResponse(int sd, std::map<int, Client *> ClientsInformation);
 	bool			_portExists(const std::string& s);
 	std::string		_getListen(std::istringstream& iss);
 
