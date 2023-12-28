@@ -26,8 +26,12 @@ void Config::_readRequest(int sd)
 // 	std::ostringstream	http_response;
 
 // 	http_response << "HTTP/1.1 200 OK\r\n";
-// 	http_response << "Content-Type: text/html\r\n";
-// 	std::string	content("<html><body><h1>Hello, this is a simple HTTP response!</h1></body></html>");
+// 	http_response << "Content-Type: image/jpeg\r\n";
+// 	std::ifstream file("assets/test_image.jpg"); // Replace with your file path
+//     std::stringstream buffer;
+//     buffer << file.rdbuf();
+//     std::string content = buffer.str();
+// 	// std::string	content(fileContent);
 // 	http_response << "Content-Length: " << content.size();
 // 	http_response << "\r\n\r\n" << content;
 

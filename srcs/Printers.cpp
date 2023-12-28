@@ -89,6 +89,7 @@ void	Printers::print_locations(const Server *srv)
 		std::cout << BLUE << "-------------------" << i << "-------------------" << RESET_COLOR << std::endl;
 		std::cout << "Path: " << locations[i]->getPath() << std::endl;
 		std::cout << "RootPath: " << locations[i]->getRootPath() << std::endl;
+		std::cout << "UploadDir: " << locations[i]->getUploadDir() << std::endl;
 		print_indexes(locations[i]->getIndexes());
 		std::cout << "AutoIndex: " << locations[i]->getAutoIndex() << std::endl;
 		print_allow_methods(locations[i]->getAllowMethods());
