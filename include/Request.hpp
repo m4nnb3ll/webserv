@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/28 11:54:24 by abelayad         ###   ########.fr       */
+/*   Updated: 2023/12/28 20:50:03 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ class Request
         
         std::vector<std::string>                                    Lines;
         std::string                                                 AllBody;
+        std::string                                                 AllHeader;
         size_t                                                      BodySize;
         std::string                                                 boundary;
         bool                                                        isFinished;

@@ -17,7 +17,7 @@ Request::Request()
     // Method = "";
     StatusCode = -1;
     BodySize = 0;
-    // ContentLength = 0;
+    ContentLength = 0;
     // TransferEncoding = "";
     // RequestLine = "";
     // HTTPVersion = "";
@@ -220,14 +220,14 @@ std::string  Request::FillRequestLine()//change this and work with SearchLine()
     return (RequestLine);
 }
 
-void FormOne(Request *Request)
+void FormOne(Request *Req)
 {
     bool                                                Status;
     std::string                                         Line;
     std::string                                         Key;
     std::string                                         Value;
     std::vector<std::pair<std::string, std::string> >   Body;
-    std::istringstream                                  ss(Request->AllBody);
+    std::istringstream                                  ss(Req->AllBody);
 
     while (getline(ss, Line, '&'))
     {
@@ -242,7 +242,7 @@ void FormOne(Request *Request)
         }
         Body.push_back(std::make_pair(Key, Value));
     }
-    Request->SetBody(Body);
+    Req->SetBody(Body);
 }
 
 std::vector<std::string> SplitBody(std::string data)
@@ -258,17 +258,17 @@ std::vector<std::string> SplitBody(std::string data)
     return (Lines);
 }
 
-void FormTwo(Request *Request)
+void FormTwo(Request *Req)
 {
     std::vector<std::pair<std::string, std::string> >   Body;
     std::vector<std::string>                            data; 
     std::string                                         value;
     std::string                                         key;
 
-    data = SplitBody(Request->AllBody);
+    data = SplitBody(Req->AllBody);
     for (std::vector<std::string>::iterator iter = data.begin(); iter != data.end(); iter++)
     {
-        if (*iter == Request->boundary)
+        if (*iter == Req->boundary)
         {
             iter++;
             size_t begin = (*iter).find("=");
@@ -288,18 +288,79 @@ void FormTwo(Request *Request)
             value = "";
         }
     }
-    Request->SetBody(Body);
+    Req->SetBody(Body);
 }
 
-void    ConvertBodyToKeyValue(Request *Request)
+bool    IsHexNumber(std::string Number)
 {
-    if (Request->GetContentType() == "application/x-www-form-urlencoded")
-        FormOne(Request);
-    else if (Request->GetContentType() == "multipart/form-data")
-        FormTwo(Request);
+    std::string HexNumber = "0123456789abcdefABCDEF";
+    for (size_t i = 0; i < Number.size(); i++)
+    {
+        if (HexNumber.find(Number[i]) > HexNumber.size())
+            return (false);
+    }
+    return (true);
 }
 
-void FillBody(Request *Request, std::string data)
+std::string GetLineByIndex(std::string stock, size_t start, size_t end)
+{
+    std::string Line;
+
+    for (size_t i = start; i < end; i++)
+        Line += stock[i];
+    return (Line);
+}
+
+void    OrganizeBody(Request *Req)
+{
+    std::string     Stock;
+    std::string     body;
+    std::string     Line;
+    size_t          end;
+
+    Stock = Req->AllBody;
+    end = Stock.find("\r\n");
+    end+=2;
+    while (end != Stock.size())
+    {
+        Line = GetLineByIndex(Stock, 0, end - 2);
+        if (!IsHexNumber(Line) && Req->GetContentType() == "application/x-www-form-urlencoded")
+        {
+            if (!body.empty())
+                body += '&';
+            body += GetLineByIndex(Stock, 0, end-2);
+        }
+        else if (!IsHexNumber(Line))
+            body += GetLineByIndex(Stock, 0, end);
+        Stock.erase(0, end);
+        end = Stock.find("\r\n");
+        end+=2;
+    }
+    Req->AllBody = body;
+}
+
+void    ConvertBodyToKeyValue(Request *Req)
+{
+    if (Req->GetTransferEncoding() == "chunked")
+        OrganizeBody(Req);
+    if (Req->GetContentType() == "application/x-www-form-urlencoded")
+        FormOne(Req);
+    else if (Req->GetContentType() == "multipart/form-data")
+        FormTwo(Req);
+}
+
+void FillAllHeader(std::string data, Request *Req)
+{
+    size_t begin;
+
+    begin = data.find("\r\n\r\n");
+    if (begin > data.size())
+        return;
+    for (size_t i = 0; i < begin; i++)
+        Req->AllHeader += data[i];
+}
+
+void FillBody(Request *Req, std::string data)
 {
     size_t begin;
     
@@ -308,14 +369,14 @@ void FillBody(Request *Request, std::string data)
         return;
     for (size_t i = begin; i < data.size(); i++)
     {
-        if ((data[i] == '\r' || data[i] == '\n') && Request->AllBody == "")
+        if ((data[i] == '\r' || data[i] == '\n') && Req->AllBody == "")
             continue;
-        Request->BodySize++;
-        Request->AllBody += data[i];
+        Req->BodySize++;
+        Req->AllBody += data[i];
     }
-    // std::cout << Request->AllBody << std::endl;
-    ConvertBodyToKeyValue(Request);
-    // Request->PrintVectorOfPairs(Request->GetBody());
+    // std::cout << "|" << Req->AllBody << "|" << std::endl;
+    ConvertBodyToKeyValue(Req);
+    // Req->PrintVectorOfPairs(Req->GetBody());
 }
 
 void    Request::FillQueryStringParam()
@@ -376,6 +437,7 @@ Request *    FillLines(std::string    SingleRequest)
     Req->FillRequestLine();
     Req->FillRequestURI();
     Req->FillQuery();
+    FillAllHeader(SingleRequest, Req);
     if (Req->GetMethod() == "POST")
         FillBody(Req, SingleRequest);
     Req->IsRequestFinished();
