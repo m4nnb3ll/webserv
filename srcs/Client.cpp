@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:10 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/28 10:53:01 by asekkak          ###   ########.fr       */
+/*   Updated: 2023/12/28 11:54:53 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ Client &Client::operator=(const Client &other)
     return (*this);
 }
 
-void PrintMap(std::__1::map<int, Client *> *_Map)
+void PrintMap(std::map<int, Client *> *_Map)
 {
-	std::__1::map<int, Client *>::iterator iter;
+	std::map<int, Client *>::iterator iter;
 	for (iter = _Map->begin(); iter != _Map->end(); iter++)
 	{
 		std::cout << "\n<-------------------Info Begin------------------>\n" << std::endl;

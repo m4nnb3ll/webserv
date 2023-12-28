@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/28 10:43:31 by asekkak          ###   ########.fr       */
+/*   Updated: 2023/12/28 11:54:24 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,7 @@
 #define REQUEST_HPP
 
 //change the name of file to HttpRequest or the reverse
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <map>
+#include <ft_common.h>
 #include "Client.hpp"
 
 class Client;

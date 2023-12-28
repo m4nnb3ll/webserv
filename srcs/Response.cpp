@@ -1,6 +1,6 @@
+#include <ft_common.h>
 #include "Config.hpp"
 #include "Request.hpp"
-#include <dirent.h>
 
 std::string cgi(std::string file)
 {
@@ -101,9 +101,9 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
     Client *client = ClientsInformation[sd];
     // std::cout << client->ClientRequest->GetHeader()["Connection"];
 
-    if (client->ClientRequest->GetMethod() == "GET")
+    if (client && client->ClientRequest->GetMethod() == "GET")
     {
-        std::ifstream file(serverLocation[0]->getRootPath() + client->ClientRequest->GetRequestURI()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
+        std::ifstream file((serverLocation[0]->getRootPath() + client->ClientRequest->GetRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
         std::cout << "root : " << serverLocation[0]->getRootPath() + client->ClientRequest->GetRequestURI() << "\n";
         std::cout << "file found :" << file.good() << "\n";
         for (size_t a = 0; a < serverLocation.size(); a++)
@@ -130,7 +130,7 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
                         size_t count = 0;
                         for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
                         {
-                            std::ifstream file(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]);
+                            std::ifstream file((serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]).c_str());
                             std::cout << "search index = " << serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i] << "\n";
                             std::cout << "file found = " << file.good() << "\n";
                             if (file.good()) // if found this index
@@ -180,7 +180,7 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
                     size_t count = 0;
                     for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
                     {
-                        std::ifstream file(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]);
+                        std::ifstream file((serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]).c_str());
                         std::cout << "search index = " << serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i] << "\n";
                         std::cout << "file found = " << file.good() << "\n";
                         if (file.good()) // if found this index
@@ -207,12 +207,12 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
                 }
             }
         }
-        if (!client->isSend)
+        if (client && !client->isSend)
         {
             sendResponseTest("<h1 style=\"color:red\">NOT FOUND 404</h1>", sd, 0);
         }
     }
-    exit(0);
+    // exit(0);
     // if (client->ClientRequest->GetMethod() == "GET") // <<<<<<<<<========= CHECK METHOD "GET"
     // {
     //     client->isSend = true;
