@@ -3,18 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:10 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/20 20:40:11 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/28 11:54:53 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client(){}
+Client::Client()
+{
+	isSend = false;
+	ClientRequest = NULL;
+}
 
-Client::~Client(){}
+Client::~Client()
+{
+	// delete ClientRequest;
+}
 
 Client::Client(const Client &other){ (void)other; }
 
@@ -24,9 +31,9 @@ Client &Client::operator=(const Client &other)
     return (*this);
 }
 
-void PrintMap(std::__1::map<int, Client *> *_Map)
+void PrintMap(std::map<int, Client *> *_Map)
 {
-	std::__1::map<int, Client *>::iterator iter;
+	std::map<int, Client *>::iterator iter;
 	for (iter = _Map->begin(); iter != _Map->end(); iter++)
 	{
 		std::cout << "\n<-------------------Info Begin------------------>\n" << std::endl;
@@ -36,13 +43,16 @@ void PrintMap(std::__1::map<int, Client *> *_Map)
 		std::cout << "RequestURI : " << iter->second->ClientRequest->GetRequestURI() << std::endl;
 		std::cout << "Method : " << iter->second->ClientRequest->GetMethod() << std::endl;
 		std::cout << "HTTPVersion : " << iter->second->ClientRequest->GetHTTPVersion() << std::endl;
-		std::cout << "ErrorCode : " << iter->second->ClientRequest->GetErrorCode() << std::endl;
+		std::cout << "StatusCode : " << iter->second->ClientRequest->GetStatusCode() << std::endl;
+		std::cout << "Connection : " << iter->second->ClientRequest->GetConnection() << std::endl;
+		std::cout << "TransferEncoding : " << iter->second->ClientRequest->GetTransferEncoding() << std::endl;
 		std::cout << "Connection : " << iter->second->ClientRequest->GetConnection() << std::endl;
         if (iter->second->ClientRequest->GetMethod() == "POST")
         {
             std::cout << "ContentType : " << iter->second->ClientRequest->GetContentType() << std::endl;
             std::cout << "ContentLength : " << iter->second->ClientRequest->GetContentLength() << std::endl;
         }
+		std::cout << "IsFinished : " << iter->second->ClientRequest->isFinished << std::endl;
 		std::cout << "\n<-------------------Info End------------------>" << std::endl;
 
 		std::cout << "\n<-------------------Header Begin------------------>\n" << std::endl;

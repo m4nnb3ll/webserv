@@ -18,7 +18,7 @@ class Location
 		int									_redirectCode;
 		Server*								_server;
 		std::map<std::string, std::string>	_cgi;
-
+		std::string							_uploadDir;
 	public :
 		Location(Server*);
 		Location(const Location &);
@@ -27,6 +27,7 @@ class Location
 
 		void										setPath(std::istringstream &iss);
 		void										setRootPath(std::istringstream &iss);
+		void										setUploadDir(std::istringstream &iss);
 		void										addIndex(std::istringstream &iss);
 		void										setAutoIndex(std::istringstream &iss);
 		void										setAllowMethods(std::istringstream &iss);
@@ -35,6 +36,7 @@ class Location
 
 		const std::string&							getPath() const;
 		std::string									getRootPath() const;
+		std::string									getUploadDir() const;
 		const std::vector<std::string>&				getIndexes() const;
 		const bool&									getAutoIndex() const;
 		const std::vector<std::string>&				getAllowMethods() const;

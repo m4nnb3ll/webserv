@@ -1,5 +1,5 @@
 #include "Config.hpp"
-#include "Requests.hpp"
+#include "Request.hpp"
 
 void Config::_readRequest(int sd)
 {
@@ -20,23 +20,28 @@ void Config::_readRequest(int sd)
 	_readStr += buffer;
 }
 
-void Config::_sendResponse(int sd)
-{
-	std::ostringstream	http_response;
+// void Config::_sendResponse(int sd, std::map<int, Client *>  ClientsInformation)
+// {
+// 	(void)ClientsInformation;
+// 	std::ostringstream	http_response;
 
-	http_response << "HTTP/1.1 200 OK\r\n";
-	http_response << "Content-Type: text/html\r\n";
-	std::string	content("<html><body><h1>Hello, this is a simple HTTP response!</h1></body></html>");
-	http_response << "Content-Length: " << content.size();
-	http_response << "\r\n\r\n" << content;
+// 	http_response << "HTTP/1.1 200 OK\r\n";
+// 	http_response << "Content-Type: image/jpeg\r\n";
+// 	std::ifstream file("assets/test_image.jpg"); // Replace with your file path
+//     std::stringstream buffer;
+//     buffer << file.rdbuf();
+//     std::string content = buffer.str();
+// 	// std::string	content(fileContent);
+// 	http_response << "Content-Length: " << content.size();
+// 	http_response << "\r\n\r\n" << content;
 
-	int ret = send(sd, http_response.str().c_str(), http_response.str().size(), 0);
-	if (ret == -1) {
-		_rmPollfd(sd);
-		std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
-		return;
-	}
-}
+// 	int ret = send(sd, http_response.str().c_str(), http_response.str().size(), 0);
+// 	if (ret == -1) {
+// 		_rmPollfd(sd);
+// 		std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
+// 		return;
+// 	}
+// }
 
 void Config::run()
 {
@@ -47,7 +52,6 @@ void Config::run()
 
 	while (!g_sigint)
 	{
-		Client *_Client = new Client();
 		if ((poll(_pollFds.data(), _pollFds.size(), -1)) <= 0)
 			continue;
 		for (size_t i = 0; i < _pollFds.size(); i++)
@@ -75,13 +79,15 @@ void Config::run()
 				else // read request from client
 				{
 					_readRequest(sd);
-					HandleRequest(_readStr, sd, &ClientsInformation, _Client);
+					HandleRequest(_readStr, sd, &ClientsInformation);
 					_readStr = "";
+					// std::cout << "_readRequest" << std::endl;
+					// std::cout << _readStr.size() << std::endl;
 				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
 			{
-				_sendResponse(sd);
+				_sendResponse(sd, ClientsInformation);
 			}
 		}
 	}

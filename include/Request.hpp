@@ -1,47 +1,41 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Requests.hpp                                       :+:      :+:    :+:   */
+/*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/22 12:44:15 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/28 20:50:03 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef REQUESTS_HPP
-#define REQUESTS_HPP
+#ifndef REQUEST_HPP
+#define REQUEST_HPP
 
-//change the name of file to HttpRequests or the reverse
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <map>
+//change the name of file to HttpRequest or the reverse
+#include <ft_common.h>
 #include "Client.hpp"
+
 class Client;
 
-//define macros for checking methods
-#define GET 0
-#define POST 1
-#define DELETE 2
-#define INCORRECT -1
+//Allowed Methods ( GET | POST | DELETE )
 
 //The CRLF is the standard line ending sequence in HTTP.
-#define CRLF "\r\n" //Carriage Return && Line Feed
-#define LF "\n" // Line Feed
-#define CR "\r" // Carriage Return
+// CRLF "\r\n" //Carriage Return && Line Feed
+// LF "\n" // Line Feed
+// CR "\r" // Carriage Return
 
-class Requests
+class Request
 {
     private:
         std::vector<std::pair<std::string, std::string> >           Body;
+        std::vector<std::pair<std::string, std::string> >           QueryStringParam;
         std::map<std::string, std::string>                          Header;
         std::string                                                 Method;
-        int                                                         ErrorCode;
-        int                                                         BodyStartPosition;
-        int                                                         ContentLength;
+        size_t                                                      ContentLength;
+        int                                                         StatusCode;
+        std::string                                                 ReasonPhrase;
         std::string                                                 TransferEncoding;
         std::string                                                 RequestLine;
         std::string                                                 HTTPVersion;
@@ -50,17 +44,18 @@ class Requests
         std::string                                                 Connection;
         std::string                                                 Query;
     public:
-        Requests();
-        ~Requests();
-        Requests(const Requests &other);
-        Requests &operator=(const Requests &other);
+        Request();
+        ~Request();
+        Request(const Request &other);
+        Request &operator=(const Request &other);
 
 
         //Getters
         std::map<std::string, std::string>                          GetHeader() const;
         std::vector<std::pair<std::string, std::string> >           GetBody() const;
-        int                                                         GetErrorCode() const;
-        int                                                         GetContentLength() const;
+        std::vector<std::pair<std::string, std::string> >           GetQueryStringParam() const;
+        int                                                         GetStatusCode() const;
+        size_t                                                      GetContentLength() const;
         std::string                                                 GetTransferEncoding() const;
         std::string                                                 GetRequestURI() const;
         std::string                                                 GetRequestLine() const;
@@ -69,6 +64,7 @@ class Requests
         std::string                                                 GetContentType() const;
         std::string                                                 GetConnection() const;
         std::string                                                 GetQuery() const;
+        std::string                                                 GetReasonPhrase() const;
         
         //Setters
         void                                                        SetTransferEncoding(std::string value);
@@ -78,16 +74,21 @@ class Requests
         void                                                        SetMethod(std::string value);
         void                                                        SetConnection(std::string value);
         void                                                        SetQuery(std::string value);
-        void                                                        SetErrorCode(int value);
+        void                                                        SetReasonPhrase(std::string value);
+        void                                                        SetStatusCode(int value);
         void                                                        SetContentLength(int value);
         void                                                        SetContentType(std::string value);
         void                                                        SetHeader(std::map<std::string, std::string> value);
         void                                                        SetBody(std::vector<std::pair<std::string, std::string> > value);
+        void                                                        SetQueryStringParam(std::vector<std::pair<std::string, std::string> > value);
 
         
         std::vector<std::string>                                    Lines;
         std::string                                                 AllBody;
+        std::string                                                 AllHeader;
+        size_t                                                      BodySize;
         std::string                                                 boundary;
+        bool                                                        isFinished;
 
         //Member Functions
         std::vector<std::string>                                    SplitRequest(std::string data);
@@ -97,13 +98,16 @@ class Requests
         bool                                                        iSValidURI();
         void                                                        SpecialGetContentType(std::string   Value);
         void                                                        FillQuery();
+        void                                                        FillQueryStringParam();
+        void                                                        IsRequestFinished();
 
         //Functions For Testing Only
         void                                                        PrintVectorOfPairs(std::vector<std::pair<std::string, std::string> >    Body);
 };
 
-Requests                                                            *FillLines(std::vector<std::string>    SingleRequest);
+Request                                                            *FillLines(std::vector<std::string>    SingleRequest);
 void                                                                PrintData(std::vector<std::vector<std::string> >  RequestData);
-void                                                                HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation, Client *_Client);
+void                                                                HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation);
+std::string  LandingPage(std::string path);// autoindex
 
 #endif
