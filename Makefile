@@ -18,6 +18,8 @@ FILES =	main.cpp \
 		run.cpp \
 		Request.cpp \
 		Client.cpp \
+		Response.cpp \
+		utils/autoindex.cpp  \
 
 INCLUDE_DIR = include
 

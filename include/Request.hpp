@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Requests.hpp                                       :+:      :+:    :+:   */
+/*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/27 18:45:14 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/28 10:43:31 by asekkak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,5 +111,6 @@ class Request
 Request                                                            *FillLines(std::vector<std::string>    SingleRequest);
 void                                                                PrintData(std::vector<std::vector<std::string> >  RequestData);
 void                                                                HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation);
+std::string  LandingPage(std::string path);// autoindex
 
 #endif

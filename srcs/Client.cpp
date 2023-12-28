@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:10 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/27 20:03:28 by abelayad         ###   ########.fr       */
+/*   Updated: 2023/12/28 10:53:01 by asekkak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 Client::Client()
 {
+	isSend = false;
 	ClientRequest = NULL;
 }
 
