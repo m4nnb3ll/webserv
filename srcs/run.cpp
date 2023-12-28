@@ -20,24 +20,24 @@ void Config::_readRequest(int sd)
 	_readStr += buffer;
 }
 
-void Config::_sendResponse(int sd, std::map<int, Client *>  ClientsInformation)
-{
-	(void)ClientsInformation;
-	std::ostringstream	http_response;
+// void Config::_sendResponse(int sd, std::map<int, Client *>  ClientsInformation)
+// {
+// 	(void)ClientsInformation;
+// 	std::ostringstream	http_response;
 
-	http_response << "HTTP/1.1 200 OK\r\n";
-	http_response << "Content-Type: text/html\r\n";
-	std::string	content("<html><body><h1>Hello, this is a simple HTTP response!</h1></body></html>");
-	http_response << "Content-Length: " << content.size();
-	http_response << "\r\n\r\n" << content;
+// 	http_response << "HTTP/1.1 200 OK\r\n";
+// 	http_response << "Content-Type: text/html\r\n";
+// 	std::string	content("<html><body><h1>Hello, this is a simple HTTP response!</h1></body></html>");
+// 	http_response << "Content-Length: " << content.size();
+// 	http_response << "\r\n\r\n" << content;
 
-	int ret = send(sd, http_response.str().c_str(), http_response.str().size(), 0);
-	if (ret == -1) {
-		_rmPollfd(sd);
-		std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
-		return;
-	}
-}
+// 	int ret = send(sd, http_response.str().c_str(), http_response.str().size(), 0);
+// 	if (ret == -1) {
+// 		_rmPollfd(sd);
+// 		std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
+// 		return;
+// 	}
+// }
 
 void Config::run()
 {
