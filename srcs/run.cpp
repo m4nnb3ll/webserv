@@ -81,6 +81,8 @@ void Config::run()
 					_readRequest(sd);
 					HandleRequest(_readStr, sd, &ClientsInformation);
 					_readStr = "";
+					// std::cout << "_readRequest" << std::endl;
+					// std::cout << _readStr.size() << std::endl;
 				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
