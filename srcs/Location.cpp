@@ -144,6 +144,11 @@ const std::string&	Location::getPath() const
 	return (this->_path);
 }
 
+  std::map<std::string, std::string> 	Location::getCgi()  
+{
+	return (this->_cgi);
+}
+
 void	Location::setAllowMethods(std::istringstream &iss)
 {
 	std::string	method;
