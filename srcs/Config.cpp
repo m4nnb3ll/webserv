@@ -182,6 +182,8 @@ void Config::_parseLocation(std::istringstream& iss, Server* srv)
 			throw std::runtime_error("Location block inside location block");
 		if (line == "root")
 			location->setRootPath(iss);
+		else if (line == "upload_dir")
+			location->setUploadDir(iss);
 		else if (line == "index")
 			location->addIndex(iss);
 		else if (line == "autoindex")

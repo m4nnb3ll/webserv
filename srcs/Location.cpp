@@ -24,6 +24,7 @@ Location &Location::operator=(const Location &copy)
 		_autoIndex = copy._autoIndex;
 		_allowMethods = copy._allowMethods;
 		_cgi = copy._cgi;
+		_uploadDir = copy._uploadDir;
 	}
 	return (*this);
 }
@@ -31,6 +32,11 @@ Location &Location::operator=(const Location &copy)
 std::string		Location::getRootPath() const
 {
 	return (this->_rootPath);
+}
+
+std::string		Location::getUploadDir() const
+{
+	return (this->_uploadDir);
 }
 
 const std::vector<std::string>&	Location::getIndexes() const
@@ -91,6 +97,21 @@ void	Location::setRootPath(std::istringstream &iss)
 	if (!(info.st_mode & S_IFDIR))
 		throw(std::runtime_error("the rootPath is not a directory!"));
 	_rootPath = rootPath;
+}
+
+void	Location::setUploadDir(std::istringstream &iss)
+{
+	std::string	uploadDir;
+	struct stat	info;
+	
+	iss >> uploadDir;
+	if (iss.fail() || !iss.eof())
+		throw(std::runtime_error("error in upload_dir"));
+	if (stat(uploadDir.c_str(), &info) != 0)
+        throw(std::runtime_error("Error in `upload_dir`, make sure that the upload_dir does exist!"));
+	if (!(info.st_mode & S_IFDIR))
+		throw(std::runtime_error("the upload_dir is not a directory!"));
+	_uploadDir = uploadDir;
 }
 
 void	Location::addIndex(std::istringstream &iss)

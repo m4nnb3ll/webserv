@@ -16,8 +16,10 @@ FILES =	main.cpp \
 		ServersSocket.cpp \
 		Location.cpp \
 		run.cpp \
-		Requests.cpp \
+		Request.cpp \
 		Client.cpp \
+		Response.cpp \
+		utils/autoindex.cpp  \
 
 INCLUDE_DIR = include
 
