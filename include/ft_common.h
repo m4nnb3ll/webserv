@@ -27,7 +27,8 @@
 # define WHITE		"\033[0;37m"
 # define RESET_COLOR "\033[0m"
 
-# define BUFFER_SIZE 4096
+# define BUFFER_SIZE 10000
+// # define BUFFER_SIZE 4096
 
 extern int g_sigint;
 

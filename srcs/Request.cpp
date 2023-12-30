@@ -170,7 +170,7 @@ void Request::SplitLine(std::string Line)
         if (!_status)
             _contentType = Value;
         // else
-        //     StatusCode = 415;//Unsupported Media Type
+        //     _statusCode = 415;//Unsupported Media Type
     }
     if (SearchLine(Line, "Content-Length"))
         _contentLength = static_cast<int>(strtod(Value.c_str(), NULL));
@@ -263,78 +263,78 @@ std::vector<std::string> SplitBody(std::string data, Request *Req)
     while (std::getline(s, Line))//check for CRLF | CR | LF
     {
         Lines.push_back(Line);
-        // std::cout << "\nLine : " << Line << std::endl;
+        if (Line == Req->_boundaryEnd)
+        {
+            std::cout << "\nLine : " << Line << std::endl;
+            Req->_isFinished = true;
+            break ;
+        }
     }
     return (Lines);
 }
 
-// bool    isFile(std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
-// {
-//     size_t begin;
+bool    isFile(std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
+{
+    size_t begin;
     
-//     begin = (*iter).find(" filename=");
-//     if (begin < (*iter).size())
-//     {
-//         iter++;
-//         if (iter != data.end())
-//         {
-//             begin = (*iter).find("Content-Type: ");
-//             if (begin < (*iter).size())
-//             {
-//                 return (true);
-//             }
-//         }
-//     }
-//     return (false);
-// }
+    begin = (*iter).find(" filename=");
+    if (begin < (*iter).size())
+    {
+        iter++;
+        if (iter != data.end())
+        {
+            begin = (*iter).find("Content-Type: ");
+            if (begin < (*iter).size())
+            {
+                return (true);
+            }
+        }
+    }
+    return (false);
+}
 
-// std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
-// {
-//     (void)iter;
-//     (void)data;
-//     (void)Req;
-//     size_t                                              begin;
-//     std::string                                         value;
-//     std::string                                         key;
+std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
+{
+    (void)iter;
+    (void)data;
+    (void)Req;
+    size_t                                              begin;
+    std::string                                         value;
+    std::string                                         key;
     
-//     begin = (*iter).find(" filename=");
-//     if (begin < (*iter).size())
-//     {
-//         for (size_t i = begin + 11; i < (*iter).size() && begin <= (*iter).size(); i++)
-//         {
-//             if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
-//                 break ;
-//             key += (*iter)[i];
-//         }
-//         iter++;
-//         // iter++;
-//         if (iter != data.end())
-//         {
-//             // std::vector<std::string>::iterator it = iter;
-//             for (; iter != data.end(); iter++)
-//             {
-//                 std::cout << "iter : " << *iter << std::endl;
-//                 // if (*iter == Req->_boundaryBegin || *iter == Req->_boundaryEnd)
-//                 // {
-//                 //     break ;
-//                 // }
-//                 // value += *iter;
-//                 // if (*iter == Req->_boundaryBegin)
-//                 // {
-//                 //     Req->_isFinished = true;
-//                 //     //Check this in FormTwo()
-//                 //     break ;
-//                 // }
-//             }
-//             // iter = it;
-//         }
-//     }
-//     std::cout << "key : <--------------------" << key << "------------------> : key" << std::endl;
-//     std::cout << "value : <--------------------" << value << "------------------> : value " << std::endl;
-//     //Fill _Files
-//     std::cout << "<--------------------HandleFiles------------------>" << std::endl;
-//     return (iter);
-// }
+    begin = (*iter).find(" filename=");
+    if (begin < (*iter).size())
+    {
+        for (size_t i = begin + 11; i < (*iter).size() && begin <= (*iter).size(); i++)
+        {
+            if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
+                break ;
+            key += (*iter)[i];
+        }
+        if (iter + 2 != data.end())
+        {
+            iter+=2;
+            for (; iter != data.end(); iter++)
+            {
+                // std::cout << "iter : " << *iter << std::endl;
+                if (*iter == "\r\n")
+                    continue;
+                if (*iter == Req->_boundaryEnd || *iter == Req->_boundaryBegin)
+                {
+                    Req->_isFinished = true;
+                    break ;
+                }
+                value += "\n" + *iter;
+            }
+        }
+    }
+    Req->_Files.push_back(std::make_pair(key, value));
+    // std::cout << "key : <--------------------" << key << "------------------> : key" << std::endl;
+    // std::cout << "value : <--------------------" << value << "------------------> : value " << std::endl;
+    //Fill _Files
+    // std::cout << "<--------------------HandleFiles------------------>" << std::endl;
+    return (iter);
+}
 
 void FormTwo(Request *Req)
 {
@@ -344,20 +344,19 @@ void FormTwo(Request *Req)
     std::string                                         key;
 
     data = SplitBody(Req->_allBody, Req);
-    for (std::vector<std::string>::iterator iter = data.begin(); iter != data.end() && (Req->_isFinished != true); iter++)
+    for (std::vector<std::string>::iterator iter = data.begin(); iter != data.end() && (Req->_isFinished == true); iter++)
     {
         if (*iter == Req->_boundaryBegin)
         {
             iter++;
-            // if (isFile(iter, data))
-            // {
-            //     std::cout << "handle files <Begin>" << std::endl;
-            //     iter = HandleFiles(Req, iter, data);//handle files
-            //     std::cout << "handle files <End>" << std::endl;
-            //     exit(1);
-            // }
-            // else
-            // {
+            if (isFile(iter, data))
+            {
+                iter = HandleFiles(Req, iter, data);//handle files
+                if (*iter == Req->_boundaryBegin)
+                    iter--;
+            }
+            else //*iter != Req->_boundaryEnd && *iter != Req->_boundaryBegin
+            {
                 size_t begin = (*iter).find("=");//change from "=" to " name="
                 for (size_t i = begin + 2; i < (*iter).size() && begin <= (*iter).size(); i++)
                 {
@@ -373,7 +372,7 @@ void FormTwo(Request *Req)
                 Body.push_back(std::make_pair(key, value));
                 key = "";
                 value = "";
-            // }
+            }
         }
         if (*iter == Req->_boundaryEnd)
         {
@@ -474,7 +473,6 @@ void FillBody(Request *Req, std::string data)
         Req->_allBody += data[i];
     }
     ConvertBodyToKeyValue(Req);
-    // Req->PrintVectorOfPairs(Req->GetBody());
 }
 
 void    Request::FillQueryStringParam()
@@ -552,9 +550,9 @@ Request     *FillLines(std::string    SingleRequest)
     Req->IsRequestFinished();
     // if (Req->_isFinished)
     // {
-    //     // std::cout << "<------------------- _allBody Begin ------------------->" << std::endl;
-    //     // std::cout << Req->_allBody << std::endl;
-    //     // std::cout << "<--------------------- _allBody End ----------------->" << std::endl;
+    //     std::cout << "<------------------- _allBody Begin ------------------->" << std::endl;
+    //     std::cout << Req->_allBody << std::endl;
+    //     std::cout << "<--------------------- _allBody End ----------------->" << std::endl;
     // }
     return (Req);
 }
@@ -567,9 +565,6 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
     
     Clt = new Client();
 	Req = FillLines(_readStr);
-    // std::cout << "<------------------- _readStr Begin ------------------->" << std::endl;
-    // std::cout << _readStr << std::endl;
-    // std::cout << "<--------------------- _readStr End ----------------->" << std::endl;
     if (!Req->_isFinished)
     {
         delete Req;
@@ -582,7 +577,11 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
         iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
     else
 	    ClientsInformation->insert(std::make_pair(sd, Clt));
-	// PrintMap(ClientsInformation);
+    // std::cout << "<------------------- _readStr Begin ------------------->" << std::endl;
+    // std::cout << _readStr << std::endl;
+    // std::cout << _readStr.size() << std::endl;
+    // std::cout << "<--------------------- _readStr End ----------------->" << std::endl;
+	PrintMap(ClientsInformation);
     return (true);
 }
 

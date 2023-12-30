@@ -6,7 +6,7 @@
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/29 18:01:56 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/30 19:33:35 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ class Request
         std::string                                                 _boundaryEnd;
         bool                                                        _isFinished;
         bool                                                        _status;
-        // std::vector<std::string, std::string>                       _Files;
+        std::vector<std::pair<std::string, std::string> >           _Files;
 
         //Member Functions
         std::vector<std::string>                                    SplitRequest(std::string data);
