@@ -6,7 +6,7 @@
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/28 20:50:03 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/29 18:01:56 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,20 +29,20 @@ class Client;
 class Request
 {
     private:
-        std::vector<std::pair<std::string, std::string> >           Body;
-        std::vector<std::pair<std::string, std::string> >           QueryStringParam;
-        std::map<std::string, std::string>                          Header;
-        std::string                                                 Method;
-        size_t                                                      ContentLength;
-        int                                                         StatusCode;
-        std::string                                                 ReasonPhrase;
-        std::string                                                 TransferEncoding;
-        std::string                                                 RequestLine;
-        std::string                                                 HTTPVersion;
-        std::string                                                 RequestURI;
-        std::string                                                 ContentType;
-        std::string                                                 Connection;
-        std::string                                                 Query;
+        std::vector<std::pair<std::string, std::string> >           _body;
+        std::vector<std::pair<std::string, std::string> >           _queryStringParam;
+        std::map<std::string, std::string>                          _header;
+        std::string                                                 _method;
+        size_t                                                      _contentLength;
+        int                                                         _statusCode;
+        std::string                                                 _reasonPhrase;
+        std::string                                                 _transferEncoding;
+        std::string                                                 _requestLine;
+        std::string                                                 _httpVersion;
+        std::string                                                 _requestURI;
+        std::string                                                 _contentType;
+        std::string                                                 _connection;
+        std::string                                                 _query;
     public:
         Request();
         ~Request();
@@ -83,12 +83,15 @@ class Request
         void                                                        SetQueryStringParam(std::vector<std::pair<std::string, std::string> > value);
 
         
-        std::vector<std::string>                                    Lines;
-        std::string                                                 AllBody;
-        std::string                                                 AllHeader;
-        size_t                                                      BodySize;
-        std::string                                                 boundary;
-        bool                                                        isFinished;
+        std::vector<std::string>                                    _lines;
+        std::string                                                 _allBody;
+        std::string                                                 _allHeader;
+        size_t                                                      _bodySize;
+        std::string                                                 _boundaryBegin;
+        std::string                                                 _boundaryEnd;
+        bool                                                        _isFinished;
+        bool                                                        _status;
+        // std::vector<std::string, std::string>                       _Files;
 
         //Member Functions
         std::vector<std::string>                                    SplitRequest(std::string data);
@@ -107,7 +110,8 @@ class Request
 
 Request                                                            *FillLines(std::vector<std::string>    SingleRequest);
 void                                                                PrintData(std::vector<std::vector<std::string> >  RequestData);
-void                                                                HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation);
-std::string  LandingPage(std::string path);// autoindex
+bool                                                                HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation);
+
+std::string                                                         LandingPage(std::string path);// autoindex
 
 #endif

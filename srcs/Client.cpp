@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:10 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/28 11:54:53 by abelayad         ###   ########.fr       */
+/*   Updated: 2023/12/29 15:14:03 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ void PrintMap(std::map<int, Client *> *_Map)
 		std::cout << "Sd : " << iter->first << std::endl;
 		std::cout << "RequestLine : " << iter->second->ClientRequest->GetRequestLine() << std::endl;
 		std::cout << "RequestURI : " << iter->second->ClientRequest->GetRequestURI() << std::endl;
+		std::cout << "Query : " << iter->second->ClientRequest->GetQuery() << std::endl;
 		std::cout << "Method : " << iter->second->ClientRequest->GetMethod() << std::endl;
 		std::cout << "HTTPVersion : " << iter->second->ClientRequest->GetHTTPVersion() << std::endl;
 		std::cout << "StatusCode : " << iter->second->ClientRequest->GetStatusCode() << std::endl;
@@ -52,7 +53,7 @@ void PrintMap(std::map<int, Client *> *_Map)
             std::cout << "ContentType : " << iter->second->ClientRequest->GetContentType() << std::endl;
             std::cout << "ContentLength : " << iter->second->ClientRequest->GetContentLength() << std::endl;
         }
-		std::cout << "IsFinished : " << iter->second->ClientRequest->isFinished << std::endl;
+		std::cout << "IsFinished : " << iter->second->ClientRequest->_isFinished << std::endl;
 		std::cout << "\n<-------------------Info End------------------>" << std::endl;
 
 		std::cout << "\n<-------------------Header Begin------------------>\n" << std::endl;
