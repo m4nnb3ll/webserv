@@ -307,14 +307,26 @@ std::vector<std::string> SplitBody(std::string data, Request *Req)
 //             key += (*iter)[i];
 //         }
 //         iter++;
-//         for (std::vector<std::string>::iterator it = iter; it != data.end(); it++)
+//         // iter++;
+//         if (iter != data.end())
 //         {
-//             if (*iter == Req->_boundaryBegin)
+//             // std::vector<std::string>::iterator it = iter;
+//             for (; iter != data.end(); iter++)
 //             {
-//                 Req->_isFinished = true;
-//                 //Check this in FormTwo()
-//                 break ;
+//                 std::cout << "iter : " << *iter << std::endl;
+//                 // if (*iter == Req->_boundaryBegin || *iter == Req->_boundaryEnd)
+//                 // {
+//                 //     break ;
+//                 // }
+//                 // value += *iter;
+//                 // if (*iter == Req->_boundaryBegin)
+//                 // {
+//                 //     Req->_isFinished = true;
+//                 //     //Check this in FormTwo()
+//                 //     break ;
+//                 // }
 //             }
+//             // iter = it;
 //         }
 //     }
 //     std::cout << "key : <--------------------" << key << "------------------> : key" << std::endl;
@@ -338,24 +350,29 @@ void FormTwo(Request *Req)
         {
             iter++;
             // if (isFile(iter, data))
+            // {
+            //     std::cout << "handle files <Begin>" << std::endl;
             //     iter = HandleFiles(Req, iter, data);//handle files
+            //     std::cout << "handle files <End>" << std::endl;
+            //     exit(1);
+            // }
             // else
             // {
-            size_t begin = (*iter).find("=");//change from "=" to " name="
-            for (size_t i = begin + 2; i < (*iter).size() && begin <= (*iter).size(); i++)
-            {
-                if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
-                    break ;
-                key += (*iter)[i];
-            }
-            if (iter + 2 != data.begin())
-            {
-                iter += 2;
-                value = *iter;
-            }
-            Body.push_back(std::make_pair(key, value));
-            key = "";
-            value = "";
+                size_t begin = (*iter).find("=");//change from "=" to " name="
+                for (size_t i = begin + 2; i < (*iter).size() && begin <= (*iter).size(); i++)
+                {
+                    if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
+                        break ;
+                    key += (*iter)[i];
+                }
+                if (iter + 2 != data.begin())
+                {
+                    iter += 2;
+                    value = *iter;
+                }
+                Body.push_back(std::make_pair(key, value));
+                key = "";
+                value = "";
             // }
         }
         if (*iter == Req->_boundaryEnd)
@@ -425,10 +442,10 @@ void    ConvertBodyToKeyValue(Request *Req)
     if (Req->GetTransferEncoding() == "chunked")
         OrganizeBody(Req);
     //handle Files
-    if (Req->GetContentType() == "application/x-www-form-urlencoded")
-        FormOne(Req);
-    else if (Req->GetContentType() == "multipart/form-data")
+    if (Req->GetContentType() == "multipart/form-data")
         FormTwo(Req);
+    else if (Req->GetContentType() == "application/x-www-form-urlencoded")
+        FormOne(Req);
 }
 
 void FillAllHeader(std::string data, Request *Req)
@@ -514,6 +531,10 @@ void Request::IsRequestFinished()
         _statusCode = 405;// _method Not Allowed | check it later
     if (_method == "POST" && _bodySize == _contentLength && _statusCode == -1)
         _isFinished = true;
+    else if (_method == "GET" && _statusCode == -1)
+        _isFinished = true;
+    else if (_method == "DELETE" && _statusCode == -1)
+        _isFinished = true;
 }
 
 Request     *FillLines(std::string    SingleRequest)
@@ -529,12 +550,12 @@ Request     *FillLines(std::string    SingleRequest)
     if (Req->GetMethod() == "POST")
         FillBody(Req, SingleRequest);
     Req->IsRequestFinished();
-    if (Req->_isFinished)
-    {
-        std::cout << "<------------------- _allBody Begin ------------------->" << std::endl;
-        std::cout << Req->_allBody << std::endl;
-        std::cout << "<--------------------- _allBody End ----------------->" << std::endl;
-    }
+    // if (Req->_isFinished)
+    // {
+    //     // std::cout << "<------------------- _allBody Begin ------------------->" << std::endl;
+    //     // std::cout << Req->_allBody << std::endl;
+    //     // std::cout << "<--------------------- _allBody End ----------------->" << std::endl;
+    // }
     return (Req);
 }
 
@@ -546,6 +567,9 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
     
     Clt = new Client();
 	Req = FillLines(_readStr);
+    // std::cout << "<------------------- _readStr Begin ------------------->" << std::endl;
+    // std::cout << _readStr << std::endl;
+    // std::cout << "<--------------------- _readStr End ----------------->" << std::endl;
     if (!Req->_isFinished)
     {
         delete Req;
