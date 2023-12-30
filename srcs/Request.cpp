@@ -265,7 +265,6 @@ std::vector<std::string> SplitBody(std::string data, Request *Req)
         Lines.push_back(Line);
         if (Line == Req->_boundaryEnd)
         {
-            std::cout << "\nLine : " << Line << std::endl;
             Req->_isFinished = true;
             break ;
         }
@@ -316,7 +315,6 @@ std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std:
             iter+=2;
             for (; iter != data.end(); iter++)
             {
-                // std::cout << "iter : " << *iter << std::endl;
                 if (*iter == "\r\n")
                     continue;
                 if (*iter == Req->_boundaryEnd || *iter == Req->_boundaryBegin)
@@ -329,10 +327,6 @@ std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std:
         }
     }
     Req->_Files.push_back(std::make_pair(key, value));
-    // std::cout << "key : <--------------------" << key << "------------------> : key" << std::endl;
-    // std::cout << "value : <--------------------" << value << "------------------> : value " << std::endl;
-    //Fill _Files
-    // std::cout << "<--------------------HandleFiles------------------>" << std::endl;
     return (iter);
 }
 
@@ -548,12 +542,6 @@ Request     *FillLines(std::string    SingleRequest)
     if (Req->GetMethod() == "POST")
         FillBody(Req, SingleRequest);
     Req->IsRequestFinished();
-    // if (Req->_isFinished)
-    // {
-    //     std::cout << "<------------------- _allBody Begin ------------------->" << std::endl;
-    //     std::cout << Req->_allBody << std::endl;
-    //     std::cout << "<--------------------- _allBody End ----------------->" << std::endl;
-    // }
     return (Req);
 }
 
@@ -577,10 +565,6 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
         iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
     else
 	    ClientsInformation->insert(std::make_pair(sd, Clt));
-    // std::cout << "<------------------- _readStr Begin ------------------->" << std::endl;
-    // std::cout << _readStr << std::endl;
-    // std::cout << _readStr.size() << std::endl;
-    // std::cout << "<--------------------- _readStr End ----------------->" << std::endl;
 	PrintMap(ClientsInformation);
     return (true);
 }
