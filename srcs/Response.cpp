@@ -11,7 +11,7 @@ std::map<std::string, std::string> initEnv(int sd, Location *serverLocation, std
     std::cout << "\nget query -> " << client->ClientRequest->GetQuery();
     std::map<std::string, std::string> env;
     std::stringstream oss;
-    oss << client->ClientRequest->BodySize;
+    oss << client->ClientRequest->_bodySize;
     env["REDIRECT_STATUS"] = "200";
     env["GATEWAY_INTERFACE"] = "CGI/1.1";
     env["SCRIPT_NAME"] = serverLocation->getRootPath();     // take a virtual path /myapp/cgi/script.py
