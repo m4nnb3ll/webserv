@@ -300,7 +300,7 @@ std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std:
     size_t                                              begin;
     std::string                                         value;
     std::string                                         key;
-    
+ 
     begin = (*iter).find(" filename=");
     if (begin < (*iter).size())
     {
@@ -366,7 +366,6 @@ void FormTwo(Request *Req)
                 Body.push_back(std::make_pair(key, value));
                 key = "";
                 value = "";
-            }
         }
         if (*iter == Req->_boundaryEnd)
         {
@@ -552,6 +551,9 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
     
     Clt = new Client();
 	Req = FillLines(_readStr);
+    // std::cout << "<------------------- _readStr Begin ------------------->" << std::endl;
+    // std::cout << _readStr << std::endl;
+    // std::cout << "<--------------------- _readStr End ----------------->" << std::endl;
     if (!Req->_isFinished)
     {
         delete Req;
