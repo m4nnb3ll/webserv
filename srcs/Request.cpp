@@ -434,7 +434,6 @@ void    ConvertBodyToKeyValue(Request *Req)
 {
     if (Req->GetTransferEncoding() == "chunked")
         OrganizeBody(Req);
-    //handle Files
     if (Req->GetContentType() == "multipart/form-data")
         FormTwo(Req);
     else if (Req->GetContentType() == "application/x-www-form-urlencoded")
@@ -565,7 +564,7 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
         iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
     else
 	    ClientsInformation->insert(std::make_pair(sd, Clt));
-	PrintMap(ClientsInformation);
+	// PrintMap(ClientsInformation);
     return (true);
 }
 
