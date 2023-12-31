@@ -304,6 +304,31 @@ std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std:
     begin = (*iter).find(" filename=");
     if (begin < (*iter).size())
     {
+        iter++;
+        if (iter != data.end())
+        {
+            begin = (*iter).find("Content-Type: ");
+            if (begin < (*iter).size())
+            {
+                return (true);
+            }
+        }
+    }
+    return (false);
+}
+
+std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
+{
+    (void)iter;
+    (void)data;
+    (void)Req;
+    size_t                                              begin;
+    std::string                                         value;
+    std::string                                         key;
+ 
+    begin = (*iter).find(" filename=");
+    if (begin < (*iter).size())
+    {
         for (size_t i = begin + 11; i < (*iter).size() && begin <= (*iter).size(); i++)
         {
             if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
