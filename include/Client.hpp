@@ -6,7 +6,7 @@
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:23 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/29 22:15:22 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/31 20:28:28 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,10 @@ class   Client
         Client(const Client &other);
         Client &operator=(const Client &other);
 
-        Request     *ClientRequest;//change this into vector of requests if needed
-        bool        isSend;
+        Request     *_clientRequest;//change this into vector of requests if needed
+        bool        _isSend;
 };
 
-void PrintMap(std::map<int, Client *> *_Map);
+void PrintMap(std::map<int, Client *> *Map);
 
 #endif

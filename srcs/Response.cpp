@@ -7,20 +7,20 @@ std::map<std::string, std::string> initEnv(int sd, Location *serverLocation, std
     std::cout << "\nim in initEnv fun";
     Client *client = ClientsInformation[sd];
     std::cout << "\nlocation path -> " << serverLocation->getAllowMethods()[0];
-    std::cout << "\nget Content type -> " << client->ClientRequest->GetHeader()["Content-Type"];
-    std::cout << "\nget query -> " << client->ClientRequest->GetQuery();
+    std::cout << "\nget Content type -> " << client->_clientRequest->_getHeader()["Content-Type"];
+    std::cout << "\nget query -> " << client->_clientRequest->_getQuery();
     std::map<std::string, std::string> env;
     std::stringstream oss;
-    oss << client->ClientRequest->_bodySize;
+    oss << client->_clientRequest->_bodySize;
     env["REDIRECT_STATUS"] = "200";
     env["GATEWAY_INTERFACE"] = "CGI/1.1";
     env["SCRIPT_NAME"] = serverLocation->getRootPath();     // take a virtual path /myapp/cgi/script.py
     env["SCRIPT_FILENAME"] = serverLocation->getRootPath(); // take a abolute path /var/www/html/myapp/cgi/script.py
-    env["REQUEST_METHOD"] = client->ClientRequest->GetMethod();
+    env["REQUEST_METHOD"] = client->_clientRequest->_getMethod();
     env["CONTENT_LENGTH"] = oss.str(); // take body
-    env["CONTENT_TYPE"] = client->ClientRequest->GetHeader()["Content-Type"];  // --> header : Content Type
-    env["PATH_INFO"] = client->ClientRequest->GetRequestURI(); //might need some change, using config path/contentLocation
-    env["QUERY_STRING"] = client->ClientRequest->GetQuery();
+    env["CONTENT_TYPE"] = client->_clientRequest->_getHeader()["Content-Type"];  // --> header : Content Type
+    env["PATH_INFO"] = client->_clientRequest->_getRequestURI(); //might need some change, using config path/contentLocation
+    env["QUERY_STRING"] = client->_clientRequest->_getQuery();
     // env["REQUEST_URI"] = request.getPath() + request.getQuery(); // uri complet must add when morad push it project
 	env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	env["SERVER_SOFTWARE"] = "Weebserv/1.0";
@@ -110,33 +110,33 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
     const std::vector<Location *> &serverLocation = server->getLocations(); // get location
     Client *client = ClientsInformation[sd];
  
-    if (client && client->ClientRequest->GetMethod() == "GET" && client->isSend != true)
+    if (client && client->_clientRequest->_getMethod() == "GET" && client->_isSend != true)
     {
-         std::ifstream file((serverLocation[0]->getRootPath() + client->ClientRequest->GetRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
+         std::ifstream file((serverLocation[0]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
 
          for (size_t a = 0; a < serverLocation.size(); a++)
         {
             std::map<std::string, std::string> isCgi = serverLocation[a]->getCgi();
             std::map<std::string, std::string>::iterator it = isCgi.begin();
-            std::ifstream file((serverLocation[a]->getRootPath() + client->ClientRequest->GetRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
-            if (client->ClientRequest->GetRequestURI() == serverLocation[a]->getPath() && client->isSend != true)    // if / == /
+            std::ifstream file((serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
+            if (client->_clientRequest->_getRequestURI() == serverLocation[a]->getPath() && client->_isSend != true)    // if / == /
             {                                                                                                        // handle if autoindex on or off , and check is file or not
                 std::vector<std::string> path;
-                std::string pathDir = serverLocation[a]->getRootPath() + client->ClientRequest->GetRequestURI();
+                std::string pathDir = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
                 DIR *dir = opendir(pathDir.c_str());
 
-                path.push_back(client->ClientRequest->GetRequestURI());
-                if ((dir || path.back() == "/") && client->isSend != true) // if a directory
+                path.push_back(client->_clientRequest->_getRequestURI());
+                if ((dir || path.back() == "/") && client->_isSend != true) // if a directory
                 {
                     std::cout << "is a directory\n";
                     if (serverLocation[a]->getAutoIndex()) // autoindex ON
                     {
 
-                        sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->ClientRequest->GetRequestURI()), sd, 0);
-                        client->isSend = true;
+                        sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
+                        client->_isSend = true;
                         break;
                     }
-                    else if (client->isSend != true) // check indexes
+                    else if (client->_isSend != true) // check indexes
                     {
                         size_t count = 0;
                         for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
@@ -153,7 +153,7 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
                                     if (!isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php")
                                     {
                                         sendResponseTest(cgi(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, serverLocation[a], ClientsInformation), sd, 0);
-                                        client->isSend = true;
+                                        client->_isSend = true;
                                         break;
                                     }
                                     else
@@ -163,7 +163,7 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
                                 else
                                 { // another extension
                                     sendResponseTest(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, 1);
-                                    client->isSend = true;
+                                    client->_isSend = true;
                                     break;
                                 }
                             }
@@ -173,22 +173,22 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
                     }
                 }
             }
-            else if (file.good() && client->isSend != true) // if file
+            else if (file.good() && client->_isSend != true) // if file
             {
 
-                std::string path = serverLocation[a]->getRootPath() + client->ClientRequest->GetRequestURI();
+                std::string path = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
                 std::cout << path;
                 if (path.find(".php") != std::string::npos)
                 {
                     std::cout << ">>> IM2 HERE  <<<\n";
                     sendResponseTest(cgi(path, sd, serverLocation[a], ClientsInformation), sd, 0);
-                    client->isSend = true;
+                    client->_isSend = true;
                     break;
                 }
                 else if (serverLocation[a]->getAutoIndex()) // autoindex ON
                 {
-                    sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->ClientRequest->GetRequestURI()), sd, 0);
-                    client->isSend = true;
+                    sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
+                    client->_isSend = true;
                     break;
                 }
                 else // check indexes
@@ -207,7 +207,7 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
                                 if (!isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php")
                                 {
                                     sendResponseTest(cgi(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, serverLocation[a], ClientsInformation), sd, 0);
-                                    client->isSend = true;
+                                    client->_isSend = true;
                                 }
                                 else
                                     sendResponseTest("internal server error 500", sd, 0);
@@ -216,19 +216,19 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
                             else
                             { // another extension
                                 sendResponseTest(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, 1);
-                                client->isSend = true;
+                                client->_isSend = true;
                                 break;
                             }
                         }
                         else
                             count++;
                     }
-                    if (count == serverLocation[a]->getIndexes().size() && client->isSend != true) // not found this indexes
+                    if (count == serverLocation[a]->getIndexes().size() && client->_isSend != true) // not found this indexes
                         break;
                 }
             }
         }
-        if (client && !client->isSend)
+        if (client && !client->_isSend)
         {
             sendResponseTest("<h1 style=\"color:red\">NOT FOUND 404</h1>", sd, 0);
         }
