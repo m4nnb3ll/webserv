@@ -6,43 +6,46 @@
 /*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/30 20:50:51 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2023/12/31 21:39:04 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-//change the name of file to HttpRequest or the reverse
 #include <ft_common.h>
 #include "Client.hpp"
 
 class Client;
 
-//Allowed Methods ( GET | POST | DELETE )
+/* Allowed Methods ( GET | POST | DELETE )
 
-//The CRLF is the standard line ending sequence in HTTP.
-// CRLF "\r\n" //Carriage Return && Line Feed
-// LF "\n" // Line Feed
-// CR "\r" // Carriage Return
+The CRLF is the standard line ending sequence in HTTP.
+CRLF "\r\n" //Carriage Return && Line Feed
+LF "\n" // Line Feed
+CR "\r" // Carriage Return
+
+*/
+
+#define FILE_MAX_SIZE 10000000 //10MB (For Testing Only)
 
 class Request
 {
     private:
-        std::vector<std::pair<std::string, std::string> >           _body;
         std::vector<std::pair<std::string, std::string> >           _queryStringParam;
+        std::vector<std::pair<std::string, std::string> >           _body;
         std::map<std::string, std::string>                          _header;
         std::string                                                 _method;
-        size_t                                                      _contentLength;
-        int                                                         _statusCode;
-        std::string                                                 _reasonPhrase;
-        std::string                                                 _transferEncoding;
+        std::string                                                 _query;
         std::string                                                 _requestLine;
         std::string                                                 _httpVersion;
-        std::string                                                 _requestURI;
         std::string                                                 _contentType;
+        std::string                                                 _requestURI;
         std::string                                                 _connection;
-        std::string                                                 _query;
+        std::string                                                 _reasonPhrase;
+        std::string                                                 _transferEncoding;
+        size_t                                                      _contentLength;
+        int                                                         _statusCode;
     public:
         Request();
         ~Request();
@@ -51,36 +54,36 @@ class Request
 
 
         //Getters
-        std::map<std::string, std::string>                          GetHeader() const;
-        std::vector<std::pair<std::string, std::string> >           GetBody() const;
-        std::vector<std::pair<std::string, std::string> >           GetQueryStringParam() const;
-        int                                                         GetStatusCode() const;
-        size_t                                                      GetContentLength() const;
-        std::string                                                 GetTransferEncoding() const;
-        std::string                                                 GetRequestURI() const;
-        std::string                                                 GetRequestLine() const;
-        std::string                                                 GetHTTPVersion() const;
-        std::string                                                 GetMethod() const;
-        std::string                                                 GetContentType() const;
-        std::string                                                 GetConnection() const;
-        std::string                                                 GetQuery() const;
-        std::string                                                 GetReasonPhrase() const;
+        std::map<std::string, std::string>                          _getHeader() const;
+        std::vector<std::pair<std::string, std::string> >           _getBody() const;
+        std::vector<std::pair<std::string, std::string> >           _getQueryStringParam() const;
+        std::string                                                 _getTransferEncoding() const;
+        std::string                                                 _getRequestURI() const;
+        std::string                                                 _getRequestLine() const;
+        std::string                                                 _getHTTPVersion() const;
+        std::string                                                 _getMethod() const;
+        std::string                                                 _getContentType() const;
+        std::string                                                 _getConnection() const;
+        std::string                                                 _getQuery() const;
+        std::string                                                 _getReasonPhrase() const;
+        size_t                                                      _getContentLength() const;
+        int                                                         _getStatusCode() const;
         
         //Setters
-        void                                                        SetTransferEncoding(std::string value);
-        void                                                        SetRequestURI(std::string value);
-        void                                                        SetRequestLine(std::string value);
-        void                                                        SetHTTPVersion(std::string value);
-        void                                                        SetMethod(std::string value);
-        void                                                        SetConnection(std::string value);
-        void                                                        SetQuery(std::string value);
-        void                                                        SetReasonPhrase(std::string value);
-        void                                                        SetStatusCode(int value);
-        void                                                        SetContentLength(int value);
-        void                                                        SetContentType(std::string value);
-        void                                                        SetHeader(std::map<std::string, std::string> value);
-        void                                                        SetBody(std::vector<std::pair<std::string, std::string> > value);
-        void                                                        SetQueryStringParam(std::vector<std::pair<std::string, std::string> > value);
+        void                                                        _setTransferEncoding(std::string value);
+        void                                                        _setRequestURI(std::string value);
+        void                                                        _setRequestLine(std::string value);
+        void                                                        _setHTTPVersion(std::string value);
+        void                                                        _setMethod(std::string value);
+        void                                                        _setConnection(std::string value);
+        void                                                        _setQuery(std::string value);
+        void                                                        _setReasonPhrase(std::string value);
+        void                                                        _setStatusCode(int value);
+        void                                                        _setContentLength(int value);
+        void                                                        _setContentType(std::string value);
+        void                                                        _setHeader(std::map<std::string, std::string> value);
+        void                                                        _setBody(std::vector<std::pair<std::string, std::string> > value);
+        void                                                        _setQueryStringParam(std::vector<std::pair<std::string, std::string> > value);
 
         
         std::vector<std::string>                                    _lines;
@@ -94,18 +97,18 @@ class Request
         std::vector<std::pair<std::string, std::string> >           _Files;
 
         //Member Functions
-        std::vector<std::string>                                    SplitRequest(std::string data);
-        std::string                                                 FillRequestLine();//change this and work with SearchLine();
-        void                                                        SplitLine(std::string Line);
-        void                                                        FillRequestURI();
-        bool                                                        iSValidURI();
-        void                                                        SpecialGetContentType(std::string   Value);
-        void                                                        FillQuery();
-        void                                                        FillQueryStringParam();
-        void                                                        IsRequestFinished();
+        std::vector<std::string>                                    _splitRequest(std::string data);
+        std::string                                                 _fillRequestLine();//change this and work with SearchLine();
+        void                                                        _splitLine(std::string Line);
+        void                                                        _fillRequestURI();
+        bool                                                        _isValidURI();
+        void                                                        _specialGetContentType(std::string   Value);
+        void                                                        _fillQuery();
+        void                                                        _fillQueryStringParam();
+        void                                                        _isRequestFinished();
 
         //Functions For Testing Only
-        void                                                        PrintVectorOfPairs(std::vector<std::pair<std::string, std::string> >    Body);
+        void                                                        _printVectorOfPairs(std::vector<std::pair<std::string, std::string> >    Body);
 };
 
 Request                                                            *FillLines(std::vector<std::string>    SingleRequest);

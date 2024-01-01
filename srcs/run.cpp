@@ -47,8 +47,8 @@ void Config::run()
 {
 	Printers::print_serversSockets(_portToServersSocket);
 
-	ServersSocket* sS;
-	std::map<int, Client *>					ClientsInformation;
+	ServersSocket* 				sS;
+	std::map<int, Client *>		ClientsInformation;
 
 	while (!g_sigint)
 	{
