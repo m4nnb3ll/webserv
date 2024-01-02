@@ -12,89 +12,76 @@
 
 #include "Request.hpp"
 
-Request::Request()
-{
-    _statusCode = -1;
-    _bodySize = 0;
-    _contentLength = 0;
-    _isFinished = false;
-    _status = false;
-    // TransferEncoding = "";
-    // RequestLine = "";
-    // HTTPVersion = "";
-    // ContentType = "";
-    // RequestURI = "";
-    // Connection = "";
-    // Method = "";
-    // Query = "";
-}
+Request::Request(const std::string reqStr)
+	:	_headerComplete(false),
+		_bodyComplete(false),
+		_statusCode(-1),
+		_bodySize(0),
+		_contentLength(0),
+		_isFinished(false),
+		_status(false),
+		_reqStr(reqStr) {}
 
 Request::~Request(){}
 
-Request::Request(const Request &other){ (void)other; }
+void	Request::appendStr(const std::string reqStr) { _reqStr += reqStr; }
 
-Request &Request::operator=(const Request &other)
-{
-    if (this != &other){}
-    return (*this);
-}
+std::vector<std::pair<std::string, std::string> >   Request::getQueryStringParam() const { return (_queryStringParam); }
 
-std::vector<std::pair<std::string, std::string> >   Request::_getQueryStringParam() const { return (_queryStringParam); }
+std::vector<std::pair<std::string, std::string> >   Request::getBody() const { return (_body); }
 
-std::vector<std::pair<std::string, std::string> >   Request::_getBody() const { return (_body); }
+std::map<std::string, std::string>                  Request::getHeader() const { return (_header); }
 
-std::map<std::string, std::string>                  Request::_getHeader() const { return (_header); }
+std::string                                         Request::getRequestURI() const { return (_requestURI); }
 
-std::string                                         Request::_getRequestURI() const { return (_requestURI); }
+std::string                                         Request::getRequestLine() const { return (_requestLine); }
 
-std::string                                         Request::_getRequestLine() const { return (_requestLine); }
+std::string                                         Request::getHTTPVersion() const { return (_httpVersion); }
 
-std::string                                         Request::_getHTTPVersion() const { return (_httpVersion); }
+std::string                                         Request::getMethod() const { return (_method); }
 
-std::string                                         Request::_getMethod() const { return (_method); }
+std::string                                         Request::getConnection() const { return (_connection); }
 
-std::string                                         Request::_getConnection() const { return (_connection); }
+std::string                                         Request::getQuery() const { return (_query); }
 
-std::string                                         Request::_getQuery() const { return (_query); }
+std::string                                         Request::getContentType() const { return (_contentType); };
 
-std::string                                         Request::_getContentType() const { return (_contentType); };
+std::string                                         Request::getTransferEncoding() const { return (_transferEncoding);  }
 
-std::string                                         Request::_getTransferEncoding() const { return (_transferEncoding);  }
+int                                                 Request::getStatusCode() const { return (_statusCode); }
 
-int                                                 Request::_getStatusCode() const { return (_statusCode); }
+size_t                                              Request::getContentLength() const { return (_contentLength); }
 
-size_t                                              Request::_getContentLength() const { return (_contentLength); }
-
-std::string                                         Request::_getReasonPhrase() const { return (_reasonPhrase); }
+std::string                                         Request::getReasonPhrase() const { return (_reasonPhrase); }
 
 
-void                                                Request::_setTransferEncoding(std::string value) { _transferEncoding = value;  }
+void                                                Request::setTransferEncoding(std::string value) { _transferEncoding = value;  }
 
-void                                                Request::_setQueryStringParam(std::vector<std::pair<std::string, std::string> > value) {_queryStringParam = value; }
+void                                                Request::setQueryStringParam(std::vector<std::pair<std::string, std::string> > value) {_queryStringParam = value; }
 
-void                                                Request::_setBody(std::vector<std::pair<std::string, std::string> > value){ _body = value; }
+void                                                Request::setBody(std::vector<std::pair<std::string, std::string> > value){ _body = value; }
 
-void                                                Request::_setRequestURI(std::string value) { _requestURI = value; }
+void                                                Request::setRequestURI(std::string value) { _requestURI = value; }
 
-void                                                Request::_setRequestLine(std::string value) { _requestLine= value; }
+void                                                Request::setRequestLine(std::string value) { _requestLine= value; }
 
-void                                                Request::_setHTTPVersion(std::string value) { _httpVersion = value; }
+void                                                Request::setHTTPVersion(std::string value) { _httpVersion = value; }
 
-void                                                Request::_setMethod(std::string value) { _method = value; }
+void                                                Request::setMethod(std::string value) { _method = value; }
 
-void                                                Request::_setStatusCode(int value) { _statusCode = value; }
+void                                                Request::setStatusCode(int value) { _statusCode = value; }
 
-void                                                Request::_setHeader(std::map<std::string, std::string> value) { _header = value; }
+void                                                Request::setHeader(std::map<std::string, std::string> value) { _header = value; }
 
-void                                                Request::_setContentType(std::string value) { _contentType = value; }
+void                                                Request::setContentType(std::string value) { _contentType = value; }
 
-void                                                Request::_setContentLength(int value) {_contentLength = value;}
+void                                                Request::setContentLength(int value) {_contentLength = value;}
 
-void                                                Request::_setConnection(std::string value){ _connection = value; }
+void                                                Request::setConnection(std::string value){ _connection = value; }
 
-void                                                Request::_setQuery(std::string value){ _query = value; }
+void                                                Request::setQuery(std::string value){ _query = value; }
 
-void                                                Request::_setReasonPhrase(std::string value) { _reasonPhrase = value; }
+void                                                Request::setReasonPhrase(std::string value) { _reasonPhrase = value; }
 
 bool SearchLine(std::string Line, std::string Content)
 {
@@ -103,7 +90,7 @@ bool SearchLine(std::string Line, std::string Content)
     return (false);
 }
 
-bool    Request::_isValidURI()
+bool    Request::isValidURI()
 {
    std::string  uri_Characters;
    
@@ -127,7 +114,7 @@ bool    Request::_isValidURI()
    return (true);
 }
 
-void Request::_specialGetContentType(std::string     Value)
+void Request::specialGetContentType(std::string     Value)
 {
     size_t begin = Value.find(";");
     for (size_t i = 0; i < begin && begin <= Value.size(); i++)
@@ -144,7 +131,7 @@ void Request::_specialGetContentType(std::string     Value)
     _boundaryBegin += "\r";
 }
 
-void Request::_splitLine(std::string Line)
+void Request::splitLine(std::string Line)
 {
     size_t          begin;
     std::string     Value;
@@ -167,7 +154,7 @@ void Request::_splitLine(std::string Line)
     {
         if (Value.find("multipart/form-data") <= Value.size())
         {
-            _specialGetContentType(Value);
+            specialGetContentType(Value);
             _status = true;
         }
         if (!_status)
@@ -184,7 +171,7 @@ void Request::_splitLine(std::string Line)
     _header.insert(std::make_pair(Key, Value));
 }
 
-void Request::_fillRequestURI()
+void Request::fillRequestURI()
 {
     size_t          begin;
     size_t          end;
@@ -205,7 +192,7 @@ void Request::_fillRequestURI()
         return ;//return error code
 }
 
-std::vector<std::string> Request::_splitRequest(std::string data)
+std::vector<std::string>	Request::splitRequest(std::string data)
 {
     std::istringstream          s(data);
     std::vector<std::string>    Lines;
@@ -216,14 +203,14 @@ std::vector<std::string> Request::_splitRequest(std::string data)
     while (std::getline(s, Line))//check for CRLF | CR | LF !
     {
         if (i > 0)
-            _splitLine(Line);
+            splitLine(Line);
         Lines.push_back(Line);
         i++;
     }
     return (Lines);
 }
 
-std::string  Request::_fillRequestLine()//change this and work with SearchLine()
+std::string  Request::fillRequestLine()//change this and work with SearchLine()
 {
     //Request-Line = Method SP Request-URI SP HTTP-Version CRLF
     if (_lines.size() > 0)
@@ -253,7 +240,7 @@ void FormOne(Request *Req)
         }
         Body.push_back(std::make_pair(Key, Value));
     }
-    Req->_setBody(Body);
+    Req->setBody(Body);
 }
 
 std::vector<std::string> SplitBody(std::string data, Request *Req)
@@ -287,31 +274,7 @@ bool    isFile(std::vector<std::string>::iterator  iter, std::vector<std::string
         {
             begin = (*iter).find("Content-Type: ");
             if (begin < (*iter).size())
-            {
                 return (true);
-            }
-        }
-    }
-    return (false);
-}
-
-std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
-{
-    size_t                                              begin;
-    std::string                                         value;
-    std::string                                         key;
-    
-    begin = (*iter).find(" filename=");
-    if (begin < (*iter).size())
-    {
-        iter++;
-        if (iter != data.end())
-        {
-            begin = (*iter).find("Content-Type: ");
-            if (begin < (*iter).size())
-            {
-                return (true);
-            }
         }
     }
     return (false);
@@ -465,22 +428,22 @@ void    ConvertBodyToKeyValue(Request *Req)
         FormOne(Req);
 }
 
-void FillAllHeader(std::string data, Request *Req)
-{
-    size_t begin;
+// void FillAllHeader(std::string data, Request *Req)
+// {
+//     size_t begin;
 
-    begin = data.find("\r\n\r\n");
-    if (begin > data.size())
-        return;
-    for (size_t i = 0; i < begin; i++)
-        Req->_allHeader += data[i];
-}
+//     begin = data.find(D_CRLF);
+//     if (begin > data.size())
+//         return;
+//     for (size_t i = 0; i < begin; i++)
+//         Req->_allHeader += data[i];
+// }
 
 void FillBody(Request *Req, std::string data)
 {
     size_t begin;
     
-    begin = data.find("\r\n\r\n");
+    begin = data.find(D_CRLF);
     if (begin > data.size())
         return;
     for (size_t i = begin; i < data.size(); i++)
@@ -493,7 +456,7 @@ void FillBody(Request *Req, std::string data)
     ConvertBodyToKeyValue(Req);
 }
 
-void    Request::_fillQueryStringParam()
+void    Request::fillQueryStringParam()
 {
     std::istringstream  s(_query);
     std::string         line;
@@ -516,7 +479,7 @@ void    Request::_fillQueryStringParam()
     }
 }
 
-void Request::_fillQuery()
+void Request::fillQuery()
 {
     size_t          begin;
     size_t          UriEnd;
@@ -538,7 +501,7 @@ void Request::_fillQuery()
     _requestURI = Uri;
 }
 
-void Request::_isRequestFinished()
+void Request::isRequestFinished()
 {
     if (_method == "POST" && _contentType.empty() && _transferEncoding.empty())
         _statusCode = 400;//Bad Request
@@ -602,49 +565,44 @@ void CreateFiles(Request *Req)
     }
 }
 
-Request     *FillLines(std::string    SingleRequest)
+Request     *parseRequest(std::string reqStr)
 {
     Request                     *Req;
 
     Req = new Request();
-    Req->_lines = Req->_splitRequest(SingleRequest);
-    Req->_fillRequestLine();
-    Req->_fillRequestURI();
-    Req->_fillQuery();
-    FillAllHeader(SingleRequest, Req);
-    if (Req->_getMethod() == "POST")
-        FillBody(Req, SingleRequest);
-    if (Req->_Files.size() > 0 && Req->_getStatusCode() == -1)
+    Req->_lines = Req->splitRequest(reqStr);
+    Req->fillRequestLine();
+    Req->fillRequestURI();
+    Req->fillQuery();
+    FillAllHeader(reqStr, Req);
+    if (Req->getMethod() == "POST")
+        FillBody(Req, reqStr);
+    if (Req->_Files.size() > 0 && Req->getStatusCode() == -1)
         CreateFiles(Req);
-    Req->_isRequestFinished();
+    Req->isRequestFinished();
     return (Req);
 }
 
-bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation)
+bool    HandleRequest(std::string reqStr, int sd, std::map<int, Client *>	*sdToClient)
 {
-	Request				                *Req;
-    Client                              *Clt;
+    Client                              *client;
     std::map<int, Client *>::iterator   iter;
     
-    Clt = new Client();
-	Req = FillLines(_readStr);
-    if (!Req->_isFinished)
-    {
-        delete Req;
-        delete Clt;
+    if (!request->_isFinished)
         return (false);
-    }
-	Clt->_clientRequest = Req;
-    iter = ClientsInformation->find(sd);
-    if (iter != ClientsInformation->end())
-        iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
+    client = (*sdToClient)[sd];
+    if (client)
+        client->request = parseRequest(reqStr);
     else
-	    ClientsInformation->insert(std::make_pair(sd, Clt));
-	// PrintMap(ClientsInformation);
+    {
+        client = new Client();
+        client -> request = parseRequest(reqStr);
+        sdToClient->insert(std::make_pair(sd, client));
+    }
     return (true);
 }
 
-void    Request::_printVectorOfPairs(std::vector<std::pair<std::string, std::string> >           Body)
+void    Request::_printVectorOfPairs(std::vector<std::pair<std::string, std::string> >	Body)
 {
     std::vector<std::pair<std::string, std::string> >::iterator           iter;
     for (iter = Body.begin(); iter != Body.end(); iter++)
@@ -656,4 +614,49 @@ void PrintData(std::vector<std::vector<std::string> >  RequestData)
     for (std::vector<std::vector<std::string> >::iterator iter = RequestData.begin() ; iter != RequestData.end(); iter++)
         for (std::vector<std::string>::iterator SimpleIter = iter->begin() ; SimpleIter != iter->end(); SimpleIter++)
             std::cout << "* : " << *SimpleIter << std::endl;
+}
+
+Request*	Request::_updateHeader()
+{
+	if (!_headerComplete)
+	{
+		size_t crlfPos = _reqStr.find(D_CRLF);
+		if (crlfPos != std::npos)
+		{
+			_header = _reqStr.substr(0, crlfPos);
+			_prepareHeader();
+			_headerComplete = true;
+		}
+	}
+	return (this);
+}
+
+Request*	Request::_updateBody()
+{
+	if (!_bodyComplete)
+	{
+
+	}
+	return (this);
+}
+
+void	_fillHeaderField()
+{
+	// this function will check if the header line is valid or not
+}
+
+void	_prepareHeader()
+{
+	std::istringstream	iSS(_header);
+	std::string			line;
+
+    while (std::getline(iSS, line))
+		_fillHeaderField(line);
+}
+
+void	Request::update()
+{
+	this
+	._updateHeader()
+	._updateBody();
 }

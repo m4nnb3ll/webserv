@@ -29,6 +29,8 @@
 
 # define BUFFER_SIZE 4096
 
-extern int g_sigint;
+# define D_CRLF "\r\n\r\n"
+
+extern int  g_sigint;
 
 #endif

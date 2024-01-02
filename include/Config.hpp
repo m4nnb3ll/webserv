@@ -15,13 +15,13 @@ public :
 	
 	Config(const std::string &);
 	~Config();
-	void						run();
-	static struct sockaddr_in	strToSockaddrin(const std::string& port);
+	void									run();
+	static struct sockaddr_in				strToSockaddrin(const std::string& port);
 private:
 	std::ifstream							_configFile;
 	std::map<std::string, ServersSocket*>	_portToServersSocket;
 	std::map<int, ServersSocket*>			_sdToServersSocket;//sd: socket descriptor
-	// std::map<int, Client*>					_sdToClients;
+	std::map<int, Client*>					_sdToClient;
 	std::vector<struct pollfd>				_pollFds;
 
 	std::string								_readStr;
@@ -36,7 +36,7 @@ private:
 	void			_initSockets();
 	void			_unplugSocket(ServersSocket *sS);
 	void			_readRequest(int sd);
-	void			_sendResponse(int sd, std::map<int, Client *> ClientsInformation);
+	void			_sendResponse(int sd/* , std::map<int, Client *> sdToClient */);
 	bool			_portExists(const std::string& s);
 	std::string		_getListen(std::istringstream& iss);
 
@@ -47,7 +47,7 @@ private:
 	void			_setRoot(std::istringstream&, Server*);
 };
 
-// std::map<int, Client*>					_sdToClients;
+// std::map<int, Client*>					_sdToClient;
 
 
 // class	Client

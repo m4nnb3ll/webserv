@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:23 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/31 20:28:28 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2024/01/01 17:12:09 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class   Client
         Client(const Client &other);
         Client &operator=(const Client &other);
 
-        Request     *_clientRequest;//change this into vector of requests if needed
+        Request     *request;//change this into vector of requests if needed
         bool        _isSend;
 };
 

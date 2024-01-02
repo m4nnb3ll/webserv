@@ -44,5 +44,5 @@ class Location
 		const std::string&							getRedirectPath() const;
 		const bool&									getRedirect() const;
 		const int&									getRedirectCode() const;
-		std::map<std::string, std::string> 			getCgi()  ;
+		std::map<std::string, std::string> 			getCgi();
 };
