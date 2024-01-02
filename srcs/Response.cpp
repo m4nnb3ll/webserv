@@ -88,149 +88,149 @@ std::string cgi(std::string file, int sd, Location *serverLocation, std::map<int
     return (buffer);
 }
 
-void sendResponseTest(std::string message, int sd, int isText)
-{
-    std::ostringstream http_response;
-    (void)isText;
-    http_response << "HTTP/1.1 200 OK\r\n";
-    http_response << "Content-Type: text/html\r\n";
+// void sendResponseTest(std::string message, int sd, int isText)
+// {
+//     std::ostringstream http_response;
+//     (void)isText;
+//     http_response << "HTTP/1.1 200 OK\r\n";
+//     http_response << "Content-Type: text/html\r\n";
 
-    std::string content(message);
-    http_response << "Content-Length: " << content.size();
-    http_response << "\r\n\r\n"
-                  << content;
-    send(sd, http_response.str().c_str(), http_response.str().size(), 0);
-}
+//     std::string content(message);
+//     http_response << "Content-Length: " << content.size();
+//     http_response << "\r\n\r\n"
+//                   << content;
+//     send(sd, http_response.str().c_str(), http_response.str().size(), 0);
+// }
 
-void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
-{
-    ServersSocket *sS = _sdToServersSocket[sd];
-    Server *server = sS->getServers()[0];
-    std::vector<std::string> serverName = server->getServerNames();         //  servers
-    const std::vector<Location *> &serverLocation = server->getLocations(); // get location
-    Client *client = ClientsInformation[sd];
+// void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
+// {
+//     ServersSocket *sS = _sdToServersSocket[sd];
+//     Server *server = sS->getServers()[0];
+//     std::vector<std::string> serverName = server->getServerNames();         //  servers
+//     const std::vector<Location *> &serverLocation = server->getLocations(); // get location
+//     Client *client = ClientsInformation[sd];
  
-    if (client && client->_clientRequest->_getMethod() == "GET" && client->_isSend != true)
-    {
-         std::ifstream file((serverLocation[0]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
+//     if (client && client->_clientRequest->_getMethod() == "GET" && client->_isSend != true)
+//     {
+//          std::ifstream file((serverLocation[0]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
 
-         for (size_t a = 0; a < serverLocation.size(); a++)
-        {
-            std::map<std::string, std::string> isCgi = serverLocation[a]->getCgi();
-            std::map<std::string, std::string>::iterator it = isCgi.begin();
-            std::ifstream file((serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
-            if (client->_clientRequest->_getRequestURI() == serverLocation[a]->getPath() && client->_isSend != true)    // if / == /
-            {                                                                                                        // handle if autoindex on or off , and check is file or not
-                std::vector<std::string> path;
-                std::string pathDir = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
-                DIR *dir = opendir(pathDir.c_str());
+//          for (size_t a = 0; a < serverLocation.size(); a++)
+//         {
+//             std::map<std::string, std::string> isCgi = serverLocation[a]->getCgi();
+//             std::map<std::string, std::string>::iterator it = isCgi.begin();
+//             std::ifstream file((serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
+//             if (client->_clientRequest->_getRequestURI() == serverLocation[a]->getPath() && client->_isSend != true)    // if / == /
+//             {                                                                                                        // handle if autoindex on or off , and check is file or not
+//                 std::vector<std::string> path;
+//                 std::string pathDir = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
+//                 DIR *dir = opendir(pathDir.c_str());
 
-                path.push_back(client->_clientRequest->_getRequestURI());
-                if ((dir || path.back() == "/") && client->_isSend != true) // if a directory
-                {
-                    std::cout << "is a directory\n";
-                    if (serverLocation[a]->getAutoIndex()) // autoindex ON
-                    {
+//                 path.push_back(client->_clientRequest->_getRequestURI());
+//                 if ((dir || path.back() == "/") && client->_isSend != true) // if a directory
+//                 {
+//                     std::cout << "is a directory\n";
+//                     if (serverLocation[a]->getAutoIndex()) // autoindex ON
+//                     {
 
-                        sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
-                        client->_isSend = true;
-                        break;
-                    }
-                    else if (client->_isSend != true) // check indexes
-                    {
-                        size_t count = 0;
-                        for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
-                        {
-                            std::cout << "------------";
-                            std::ifstream file((serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]).c_str());
-                            std::cout << "search index = " << serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i] << "\n";
-                            // std::cout << "file found = " << file.good() << "\n";
-                            if (file.good()) // if found this index
-                            {
-                                std::cout << "im here\n";
-                                if (serverLocation[a]->getIndexes()[i].find(".php") != std::string::npos)
-                                {
-                                    if (!isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php")
-                                    {
-                                        sendResponseTest(cgi(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, serverLocation[a], ClientsInformation), sd, 0);
-                                        client->_isSend = true;
-                                        break;
-                                    }
-                                    else
-                                        sendResponseTest("internal server error 500", sd, 0);
-                                    break;
-                                }
-                                else
-                                { // another extension
-                                    sendResponseTest(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, 1);
-                                    client->_isSend = true;
-                                    break;
-                                }
-                            }
-                            else
-                                count++;
-                        }
-                    }
-                }
-            }
-            else if (file.good() && client->_isSend != true) // if file
-            {
+//                         sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
+//                         client->_isSend = true;
+//                         break;
+//                     }
+//                     else if (client->_isSend != true) // check indexes
+//                     {
+//                         size_t count = 0;
+//                         for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
+//                         {
+//                             std::cout << "------------";
+//                             std::ifstream file((serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]).c_str());
+//                             std::cout << "search index = " << serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i] << "\n";
+//                             // std::cout << "file found = " << file.good() << "\n";
+//                             if (file.good()) // if found this index
+//                             {
+//                                 std::cout << "im here\n";
+//                                 if (serverLocation[a]->getIndexes()[i].find(".php") != std::string::npos)
+//                                 {
+//                                     if (!isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php")
+//                                     {
+//                                         sendResponseTest(cgi(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, serverLocation[a], ClientsInformation), sd, 0);
+//                                         client->_isSend = true;
+//                                         break;
+//                                     }
+//                                     else
+//                                         sendResponseTest("internal server error 500", sd, 0);
+//                                     break;
+//                                 }
+//                                 else
+//                                 { // another extension
+//                                     sendResponseTest(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, 1);
+//                                     client->_isSend = true;
+//                                     break;
+//                                 }
+//                             }
+//                             else
+//                                 count++;
+//                         }
+//                     }
+//                 }
+//             }
+//             else if (file.good() && client->_isSend != true) // if file
+//             {
 
-                std::string path = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
-                std::cout << path;
-                if (path.find(".php") != std::string::npos)
-                {
-                    std::cout << ">>> IM2 HERE  <<<\n";
-                    sendResponseTest(cgi(path, sd, serverLocation[a], ClientsInformation), sd, 0);
-                    client->_isSend = true;
-                    break;
-                }
-                else if (serverLocation[a]->getAutoIndex()) // autoindex ON
-                {
-                    sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
-                    client->_isSend = true;
-                    break;
-                }
-                else // check indexes
-                {
-                    size_t count = 0;
-                    for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
-                    {
-                        std::ifstream file((serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]).c_str());
-                        std::cout << "search index = " << serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i] << "\n";
-                        // std::cout << "file found = " << file.good() << "\n";
-                        if (file.good()) // if found this index
-                        {
-                            std::cout << "im here\n";
-                            if (serverLocation[a]->getIndexes()[i].find(".php") != std::string::npos)
-                            {
-                                if (!isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php")
-                                {
-                                    sendResponseTest(cgi(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, serverLocation[a], ClientsInformation), sd, 0);
-                                    client->_isSend = true;
-                                }
-                                else
-                                    sendResponseTest("internal server error 500", sd, 0);
-                                break;
-                            }
-                            else
-                            { // another extension
-                                sendResponseTest(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, 1);
-                                client->_isSend = true;
-                                break;
-                            }
-                        }
-                        else
-                            count++;
-                    }
-                    if (count == serverLocation[a]->getIndexes().size() && client->_isSend != true) // not found this indexes
-                        break;
-                }
-            }
-        }
-        if (client && !client->_isSend)
-        {
-            sendResponseTest("<h1 style=\"color:red\">NOT FOUND 404</h1>", sd, 0);
-        }
-    }
-}
+//                 std::string path = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
+//                 std::cout << path;
+//                 if (path.find(".php") != std::string::npos)
+//                 {
+//                     std::cout << ">>> IM2 HERE  <<<\n";
+//                     sendResponseTest(cgi(path, sd, serverLocation[a], ClientsInformation), sd, 0);
+//                     client->_isSend = true;
+//                     break;
+//                 }
+//                 else if (serverLocation[a]->getAutoIndex()) // autoindex ON
+//                 {
+//                     sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
+//                     client->_isSend = true;
+//                     break;
+//                 }
+//                 else // check indexes
+//                 {
+//                     size_t count = 0;
+//                     for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
+//                     {
+//                         std::ifstream file((serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]).c_str());
+//                         std::cout << "search index = " << serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i] << "\n";
+//                         // std::cout << "file found = " << file.good() << "\n";
+//                         if (file.good()) // if found this index
+//                         {
+//                             std::cout << "im here\n";
+//                             if (serverLocation[a]->getIndexes()[i].find(".php") != std::string::npos)
+//                             {
+//                                 if (!isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php")
+//                                 {
+//                                     sendResponseTest(cgi(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, serverLocation[a], ClientsInformation), sd, 0);
+//                                     client->_isSend = true;
+//                                 }
+//                                 else
+//                                     sendResponseTest("internal server error 500", sd, 0);
+//                                 break;
+//                             }
+//                             else
+//                             { // another extension
+//                                 sendResponseTest(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, 1);
+//                                 client->_isSend = true;
+//                                 break;
+//                             }
+//                         }
+//                         else
+//                             count++;
+//                     }
+//                     if (count == serverLocation[a]->getIndexes().size() && client->_isSend != true) // not found this indexes
+//                         break;
+//                 }
+//             }
+//         }
+//         if (client && !client->_isSend)
+//         {
+//             sendResponseTest("<h1 style=\"color:red\">NOT FOUND 404</h1>", sd, 0);
+//         }
+//     }
+// }

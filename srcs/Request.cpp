@@ -51,6 +51,8 @@ std::string                                         Request::_getRequestLine() c
 
 std::string                                         Request::_getHTTPVersion() const { return (_httpVersion); }
 
+std::string                                         Request::getHost() const { return (_host); }
+
 std::string                                         Request::_getMethod() const { return (_method); }
 
 std::string                                         Request::_getConnection() const { return (_connection); }
@@ -181,6 +183,8 @@ void Request::_splitLine(std::string Line)
         _connection = Value;
     if (SearchLine(Line, "Transfer-Encoding"))//check this later
         _transferEncoding = Value;
+    if (SearchLine(Line, "Host"))//check this later
+        _host = Value;
     _header.insert(std::make_pair(Key, Value));
 }
 
@@ -278,28 +282,6 @@ std::vector<std::string> SplitBody(std::string data, Request *Req)
 bool    isFile(std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
 {
     size_t begin;
-    
-    begin = (*iter).find(" filename=");
-    if (begin < (*iter).size())
-    {
-        iter++;
-        if (iter != data.end())
-        {
-            begin = (*iter).find("Content-Type: ");
-            if (begin < (*iter).size())
-            {
-                return (true);
-            }
-        }
-    }
-    return (false);
-}
-
-std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
-{
-    size_t                                              begin;
-    std::string                                         value;
-    std::string                                         key;
     
     begin = (*iter).find(" filename=");
     if (begin < (*iter).size())
@@ -641,6 +623,7 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
     else
 	    ClientsInformation->insert(std::make_pair(sd, Clt));
 	// PrintMap(ClientsInformation);
+	printf("The host is: >>%s<<\n", Req->getHost().c_str());
     return (true);
 }
 

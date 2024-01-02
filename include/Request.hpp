@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/31 21:39:04 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2024/01/02 19:45:15 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Request
         std::string                                                 _query;
         std::string                                                 _requestLine;
         std::string                                                 _httpVersion;
+		std::string													_host;
         std::string                                                 _contentType;
         std::string                                                 _requestURI;
         std::string                                                 _connection;
@@ -61,6 +62,7 @@ class Request
         std::string                                                 _getRequestURI() const;
         std::string                                                 _getRequestLine() const;
         std::string                                                 _getHTTPVersion() const;
+		std::string                                                 getHost() const;
         std::string                                                 _getMethod() const;
         std::string                                                 _getContentType() const;
         std::string                                                 _getConnection() const;
