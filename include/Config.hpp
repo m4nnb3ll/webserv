@@ -8,7 +8,7 @@
 
 class	Printers;
 class	ServersSocket;
-
+class 	Client;
 class	Config
 {
 public :

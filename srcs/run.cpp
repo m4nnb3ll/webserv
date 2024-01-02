@@ -47,8 +47,8 @@ void Config::run()
 {
 	Printers::print_serversSockets(_portToServersSocket);
 
-	ServersSocket* sS;
-	std::map<int, Client *>					ClientsInformation;
+	ServersSocket* 				sS;
+	std::map<int, Client *>		ClientsInformation;
 
 	while (!g_sigint)
 	{
@@ -85,8 +85,13 @@ void Config::run()
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
 			{
-				_sendResponse(sd, ClientsInformation);
-			}
+				Client *cli = ClientsInformation[sd];
+				if(cli && cli->_clientRequest->_isFinished)
+				{
+ 					_sendResponse(sd, ClientsInformation);
+				}
+			 
+ 			}
 		}
 	}
 }

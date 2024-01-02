@@ -10,7 +10,7 @@
     </div>
     <div>
       <input type="checkbox" >
-      <label for="exampleCheck1">Check me out</label>
+      <label for="exampleCheck1">Check me offerferferferut</label>
     </div>
     <button type="submit">Submit</button>
 </form>

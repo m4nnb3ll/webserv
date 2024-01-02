@@ -2,9 +2,8 @@
 #include "Request.hpp"
 #include <dirent.h>
 
-std::string  LandingPage(std::string path)
+std::string  LandingPage(std::string path, std::string origin)
 {
-
     DIR *dir = opendir(path.c_str()); // DIR is struct handle directory stream //  and opendir return pointer to the directory
     if (dir == NULL)         // check if null // occur when not found any directory of this path
     {
@@ -40,10 +39,12 @@ std::string  LandingPage(std::string path)
     std::stringstream ss;
     while ((entry = readdir(dir)) != NULL) // readdir func used to read contain the directory
     {
-
         if (entry->d_name[0] != '.')
         {
-            ss << "<li  ><a class=\"link\" href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>\n";
+            
+            std::string link = "http://localhost:4242" + origin + "/" + entry->d_name;
+            std::cout << "link  " << link;
+            ss << "<li  ><a class=\"link\" href=\"" << link << "\">" << entry->d_name << "</a></li>\n";
         }
     }
 
