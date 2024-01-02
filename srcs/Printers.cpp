@@ -87,6 +87,7 @@ void	Printers::print_locations(const Server *srv)
 	for (size_t i = 0; i < locations.size(); i++)
 	{
 		std::cout << BLUE << "-------------------" << i << "-------------------" << RESET_COLOR << std::endl;
+		std::cout << "Server: " << locations[i]->getServer() << std::endl;
 		std::cout << "Path: " << locations[i]->getPath() << std::endl;
 		std::cout << "RootPath: " << locations[i]->getRootPath() << std::endl;
 		std::cout << "UploadDir: " << locations[i]->getUploadDir() << std::endl;

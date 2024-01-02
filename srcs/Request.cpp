@@ -622,9 +622,34 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
         iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
     else
 	    ClientsInformation->insert(std::make_pair(sd, Clt));
-	// PrintMap(ClientsInformation);
-	printf("The host is: >>%s<<\n", Req->getHost().c_str());
+	Req.getBestLocation();
     return (true);
+}
+
+// WILL BE OPTIMIZED LATER
+getBestLocation()
+{
+	Server*	srv;
+
+	// serversSocket will be retrieved later from the Client maybe.
+	locations = serversSocket.getServer(_host)->getLocations();
+
+	size_t		length = 0;
+	std::string	candidate = "";
+
+	for (size_t i = 0; i < locations.size(); i++)
+	{
+		if (locations[i].getPath().size() > uri.size()) continue ;
+		size_t	tmpLength = 0;
+		for (size_t j = 0; j < uri.size() && locations[i].getPath()[j] == uri[j]; j++)
+			tmpLength++;
+		if (tmpLength > length)
+		{
+			length = tmpLength;
+			candidate = locations[i].getPath();
+		}
+	}
+	return (candidate);
 }
 
 void    Request::_printVectorOfPairs(std::vector<std::pair<std::string, std::string> >           Body)

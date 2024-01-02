@@ -29,6 +29,11 @@ Location &Location::operator=(const Location &copy)
 	return (*this);
 }
 
+Server*	Location::getServer() const
+{
+	return (this->_server);
+}
+
 std::string		Location::getRootPath() const
 {
 	return (this->_rootPath);

@@ -34,6 +34,7 @@ class Location
 		void										setRedirect(std::istringstream &iss);
 		void										addCgi(std::istringstream& iss);
 
+		Server*										getServer() const;
 		const std::string&							getPath() const;
 		std::string									getRootPath() const;
 		std::string									getUploadDir() const;
