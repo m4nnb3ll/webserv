@@ -341,5 +341,10 @@ void	Config::insertToSdToClient(std::pair<int, Client*> pair)
 
 ServersSocket*	Config::getServersSocket(int sd) const
 {
-	return (_sdToServersSocket[sd]);
+	std::map<int, ServersSocket*>
+		::const_iterator	it = _sdToServersSocket.find(sd);
+
+	if (it != _sdToServersSocket.end())
+		return (it->second);
+    return (NULL);
 }

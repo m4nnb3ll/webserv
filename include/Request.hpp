@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/02 19:45:15 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/03 15:34:26 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,9 @@
 
 #include <ft_common.h>
 #include "Config.hpp"
-#include "Client.hpp"
 
 class	Config;
-class	Client;
+class	Location;
 
 /* Allowed Methods ( GET | POST | DELETE )
 
@@ -49,7 +48,7 @@ class Request
         std::string                                                 _transferEncoding;
         size_t                                                      _contentLength;
         int                                                         _statusCode;
-		Location													_location;
+		Location													*_location;
     public:
         Request();
         ~Request();
@@ -73,7 +72,8 @@ class Request
         std::string                                                 _getReasonPhrase() const;
         size_t                                                      _getContentLength() const;
         int                                                         _getStatusCode() const;
-        
+        Location													*getLocation() const;
+
         //Setters
         void                                                        _setTransferEncoding(std::string value);
         void                                                        _setRequestURI(std::string value);
@@ -89,7 +89,7 @@ class Request
         void                                                        _setHeader(std::map<std::string, std::string> value);
         void                                                        _setBody(std::vector<std::pair<std::string, std::string> > value);
         void                                                        _setQueryStringParam(std::vector<std::pair<std::string, std::string> > value);
-		void														setLocation(Config*);
+		void														setLocation(int sd, Config* conf);
 
         std::vector<std::string>                                    _lines;
         std::string                                                 _allBody;

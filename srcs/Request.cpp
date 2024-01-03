@@ -623,7 +623,9 @@ bool    HandleRequest(std::string _readStr, int sd, Config* conf)
         iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
     else
 	    sdToClient.insert(std::make_pair(sd, Clt));
-	Req->setLocation(conf);
+	Req->setLocation(sd, conf);
+	std::cout << "The location path is: " << Req->getLocation()->getPath() << std::endl;//STOPPED HERE
+	std::cout << "The server name is: " << Req->getLocation()->getServer()->getServerNames()[0] << std::endl;//STOPPED HERE
     return (true);
 }
 
@@ -631,13 +633,13 @@ void	Request::setLocation(int sd, Config* conf)
 {
 	std::vector<Location*>	locations;
 	size_t					length = 0;
-	std::string				candidate = "";
+	Location				*candidate;
 	std::string				path;
 
 	locations = conf->getServersSocket(sd)->getServer(_host)->getLocations();
 	for (size_t i = 0; i < locations.size(); i++)
 	{
-		path = locations[i].getPath();
+		path = locations[i]->getPath();
 		if (path.size() > _uri.size()) continue ;
 		size_t	tmpLength = 0;
 		for (size_t j = 0; j < _uri.size() && path[j] == _uri[j]; j++)
@@ -645,10 +647,15 @@ void	Request::setLocation(int sd, Config* conf)
 		if (tmpLength > length)
 		{
 			length = tmpLength;
-			candidate = path;
+			candidate = locations[i];
 		}
 	}
-	return (candidate);
+	_location = candidate;
+}
+
+Location	*Request::getLocation() const
+{
+	return (_location);
 }
 
 void    Request::_printVectorOfPairs(std::vector<std::pair<std::string, std::string> >           Body)
