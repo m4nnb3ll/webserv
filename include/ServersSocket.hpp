@@ -14,6 +14,7 @@ public:
 	int							getFd() const;
 	void						addServer(Server *s);
 	const std::vector<Server*>&	getServers() const;
+	Server*						getServer(std::string host) const;
 private:
 	int							_sd;
 	std::vector<Server*>		_servers;

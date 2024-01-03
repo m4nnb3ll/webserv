@@ -17,12 +17,12 @@ void Config::_readRequest(int sd)
 		std::cout << "reading: client[" << sd <<"] disconnected" << std::endl;
 		return;
 	}
-	_readStr += buffer;
+	// Stopped here
+	HandleRequest(buffer, sd, this);
 }
 
-void Config::_sendResponse(int sd, std::map<int, Client *>  ClientsInformation)
+void Config::_sendResponse(int sd)
 {
-	(void)ClientsInformation;
 	std::ostringstream	http_response;
 
 	http_response << "HTTP/1.1 200 OK\r\n";
@@ -48,7 +48,6 @@ void Config::run()
 	Printers::print_serversSockets(_portToServersSocket);
 
 	ServersSocket* 				sS;
-	std::map<int, Client *>		ClientsInformation;
 
 	while (!g_sigint)
 	{
@@ -77,15 +76,11 @@ void Config::run()
 					_addPollfd(client_fd, POLLIN | POLLOUT);
 				}
 				else // read request from client
-				{
 					_readRequest(sd);
-					if (HandleRequest(_readStr, sd, &ClientsInformation))
-						_readStr = "";
-				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
 			{
-				_sendResponse(sd, ClientsInformation);
+				_sendResponse(sd);
 			}
 		}
 	}

@@ -45,7 +45,7 @@ std::vector<std::pair<std::string, std::string> >   Request::_getBody() const { 
 
 std::map<std::string, std::string>                  Request::_getHeader() const { return (_header); }
 
-std::string                                         Request::_getRequestURI() const { return (_requestURI); }
+std::string                                         Request::_getRequestURI() const { return (_uri); }
 
 std::string                                         Request::_getRequestLine() const { return (_requestLine); }
 
@@ -76,7 +76,7 @@ void                                                Request::_setQueryStringPara
 
 void                                                Request::_setBody(std::vector<std::pair<std::string, std::string> > value){ _body = value; }
 
-void                                                Request::_setRequestURI(std::string value) { _requestURI = value; }
+void                                                Request::_setRequestURI(std::string value) { _uri = value; }
 
 void                                                Request::_setRequestLine(std::string value) { _requestLine= value; }
 
@@ -110,9 +110,9 @@ bool    Request::_isValidURI()
    std::string  uri_Characters;
    
    uri_Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-   for (size_t i = 0; i < _requestURI.size(); i++)
+   for (size_t i = 0; i < _uri.size(); i++)
    {
-       if (uri_Characters.find(_requestURI[i], 0) > uri_Characters.size())
+       if (uri_Characters.find(_uri[i], 0) > uri_Characters.size())
        {
             //400 => Bad Request | Uploading a file that is too large | Invalid Cookies | DNS cache error
             _statusCode = 400;
@@ -121,7 +121,7 @@ bool    Request::_isValidURI()
        }
    }
    //check the size of URI (limit it in 2,048 characters!!!) | 414 URI Too Long
-   if (_requestURI.size() > 2048)//I'm Not Sure About That
+   if (_uri.size() > 2048)//I'm Not Sure About That
    {
        _statusCode = 414;
        _reasonPhrase = "URI Too Long";
@@ -200,7 +200,7 @@ void Request::_fillRequestURI()
     if (end >= _requestLine.size())
         return ;
     for (size_t i = begin + 1; i < end; i++)
-        _requestURI += _requestLine[i];
+        _uri += _requestLine[i];
     for (size_t i = 0; i < begin; i++)
         _method += _requestLine[i];
     for (size_t i = end + 1; i < _requestLine.size(); i++)
@@ -504,20 +504,20 @@ void Request::_fillQuery()
     size_t          UriEnd;
     std::string     Uri;
 
-    begin = _requestURI.find("?");
-    if (begin > _requestURI.size())
-        UriEnd = _requestURI.size();
+    begin = _uri.find("?");
+    if (begin > _uri.size())
+        UriEnd = _uri.size();
     else
         UriEnd = begin;
     for(size_t i = 0; i < UriEnd; i++)
-        Uri += _requestURI[i];
-    if (begin <= _requestURI.size())
+        Uri += _uri[i];
+    if (begin <= _uri.size())
     {
-        for(size_t i = begin + 1; i < _requestURI.size(); i++)
-            _query += _requestURI[i];
+        for(size_t i = begin + 1; i < _uri.size(); i++)
+            _query += _uri[i];
     }
     _fillQueryStringParam();
-    _requestURI = Uri;
+    _uri = Uri;
 }
 
 void Request::_isRequestFinished()
@@ -602,11 +602,12 @@ Request     *FillLines(std::string    SingleRequest)
     return (Req);
 }
 
-bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation)
+bool    HandleRequest(std::string _readStr, int sd, Config* conf)
 {
 	Request				                *Req;
     Client                              *Clt;
     std::map<int, Client *>::iterator   iter;
+	std::map<int, Client*> sdToClient = conf->getSdToClient();
     
     Clt = new Client();
 	Req = FillLines(_readStr);
@@ -617,36 +618,34 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
         return (false);
     }
 	Clt->_clientRequest = Req;
-    iter = ClientsInformation->find(sd);
-    if (iter != ClientsInformation->end())
+    iter = sdToClient.find(sd);
+    if (iter != sdToClient.end())
         iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
     else
-	    ClientsInformation->insert(std::make_pair(sd, Clt));
-	Req.getBestLocation();
+	    sdToClient.insert(std::make_pair(sd, Clt));
+	Req->setLocation(conf);
     return (true);
 }
 
-// WILL BE OPTIMIZED LATER
-getBestLocation()
+void	Request::setLocation(int sd, Config* conf)
 {
-	Server*	srv;
+	std::vector<Location*>	locations;
+	size_t					length = 0;
+	std::string				candidate = "";
+	std::string				path;
 
-	// serversSocket will be retrieved later from the Client maybe.
-	locations = serversSocket.getServer(_host)->getLocations();
-
-	size_t		length = 0;
-	std::string	candidate = "";
-
+	locations = conf->getServersSocket(sd)->getServer(_host)->getLocations();
 	for (size_t i = 0; i < locations.size(); i++)
 	{
-		if (locations[i].getPath().size() > uri.size()) continue ;
+		path = locations[i].getPath();
+		if (path.size() > _uri.size()) continue ;
 		size_t	tmpLength = 0;
-		for (size_t j = 0; j < uri.size() && locations[i].getPath()[j] == uri[j]; j++)
+		for (size_t j = 0; j < _uri.size() && path[j] == _uri[j]; j++)
 			tmpLength++;
 		if (tmpLength > length)
 		{
 			length = tmpLength;
-			candidate = locations[i].getPath();
+			candidate = path;
 		}
 	}
 	return (candidate);

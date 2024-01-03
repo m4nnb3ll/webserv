@@ -82,7 +82,7 @@ bool isValidIPv4(const std::string& ip) {
     return true;
 }
 
-std::string	Config::_getListen(std::istringstream& iss)
+std::string	Config::_extractListen(std::istringstream& iss)
 {
 	std::string			ip;
 	int					portNum;
@@ -114,7 +114,7 @@ bool	Config::_portExists(const std::string& s)
 
 void Config::_parseListen(std::istringstream& iss, Server* srv)
 {
-	const std::string&	port(_getListen(iss));
+	const std::string&	port(_extractListen(iss));
 
 	if (_portExists(port))
 		_portToServersSocket[port]->addServer(srv);
@@ -327,4 +327,19 @@ void	Config::_initSockets()
 		_sdToServersSocket.insert(std::make_pair(sockfd, it->second));
 		_addPollfd(sockfd, POLLIN);
 	}
+}
+
+std::map<int, Client*>	Config::getSdToClient() const
+{
+	return (this->_sdToClient);
+}
+
+void	Config::insertToSdToClient(std::pair<int, Client*> pair)
+{
+	_sdToClient.insert(pair);
+}
+
+ServersSocket*	Config::getServersSocket(int sd) const
+{
+	return (_sdToServersSocket[sd]);
 }

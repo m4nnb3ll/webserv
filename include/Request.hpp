@@ -14,9 +14,11 @@
 #define REQUEST_HPP
 
 #include <ft_common.h>
+#include "Config.hpp"
 #include "Client.hpp"
 
-class Client;
+class	Config;
+class	Client;
 
 /* Allowed Methods ( GET | POST | DELETE )
 
@@ -41,12 +43,13 @@ class Request
         std::string                                                 _httpVersion;
 		std::string													_host;
         std::string                                                 _contentType;
-        std::string                                                 _requestURI;
+        std::string                                                 _uri;
         std::string                                                 _connection;
         std::string                                                 _reasonPhrase;
         std::string                                                 _transferEncoding;
         size_t                                                      _contentLength;
         int                                                         _statusCode;
+		Location													_location;
     public:
         Request();
         ~Request();
@@ -86,8 +89,8 @@ class Request
         void                                                        _setHeader(std::map<std::string, std::string> value);
         void                                                        _setBody(std::vector<std::pair<std::string, std::string> > value);
         void                                                        _setQueryStringParam(std::vector<std::pair<std::string, std::string> > value);
+		void														setLocation(Config*);
 
-        
         std::vector<std::string>                                    _lines;
         std::string                                                 _allBody;
         std::string                                                 _allHeader;
@@ -108,14 +111,13 @@ class Request
         void                                                        _fillQuery();
         void                                                        _fillQueryStringParam();
         void                                                        _isRequestFinished();
-
         //Functions For Testing Only
         void                                                        _printVectorOfPairs(std::vector<std::pair<std::string, std::string> >    Body);
 };
 
 Request                                                            *FillLines(std::vector<std::string>    SingleRequest);
 void                                                                PrintData(std::vector<std::vector<std::string> >  RequestData);
-bool                                                                HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation);
+bool                                                                HandleRequest(std::string _readStr, int sd, Config*);
 
 std::string                                                         LandingPage(std::string path);// autoindex
 
