@@ -13,6 +13,7 @@
 #include "Request.hpp"
 
 Request::Request()
+	:	_location(NULL)
 {
     _statusCode = -1;
     _bodySize = 0;
@@ -624,16 +625,43 @@ bool    HandleRequest(std::string _readStr, int sd, Config* conf)
     else
 	    sdToClient.insert(std::make_pair(sd, Clt));
 	Req->setLocation(sd, conf);
-	std::cout << "The location path is: " << Req->getLocation()->getPath() << std::endl;//STOPPED HERE
-	std::cout << "The server name is: " << Req->getLocation()->getServer()->getServerNames()[0] << std::endl;//STOPPED HERE
-    return (true);
+	Req->prepareResponse();
+	return (true);
+}
+
+void	_checkLocation()
+{
+	if (!_response.isFinished())
+	{
+		if (!_location)
+			_response.setFinished(STATUS_NOT_FOUND);
+		else if (_location -> getRedirect())
+			_response.setFinished(STATUS_MOVED);
+	}
+}
+
+void	_checkFinalMsg()
+{
+	std::ostringstream	oSS;
+	if (_response.getContent().empty())
+	{
+		oSS << "HTTP/1.1" << " " << _response.getStatusCode() << " " << "OK" << "\r\n";
+		_finalMsg = oSS.str();
+	}
+}
+
+// Stopped here
+void	Request::prepareResponse()
+{
+	_response = new Response();
+	_checkLocation()
+	_checkFinalMsg();
 }
 
 void	Request::setLocation(int sd, Config* conf)
 {
 	std::vector<Location*>	locations;
 	size_t					length = 0;
-	Location				*candidate;
 	std::string				path;
 
 	locations = conf->getServersSocket(sd)->getServer(_host)->getLocations();
@@ -647,10 +675,9 @@ void	Request::setLocation(int sd, Config* conf)
 		if (tmpLength > length)
 		{
 			length = tmpLength;
-			candidate = locations[i];
+			_location = locations[i];
 		}
 	}
-	_location = candidate;
 }
 
 Location	*Request::getLocation() const

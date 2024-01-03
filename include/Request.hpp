@@ -49,6 +49,7 @@ class Request
         size_t                                                      _contentLength;
         int                                                         _statusCode;
 		Location													*_location;
+		Response													*_response;
     public:
         Request();
         ~Request();
@@ -113,6 +114,7 @@ class Request
         void                                                        _isRequestFinished();
         //Functions For Testing Only
         void                                                        _printVectorOfPairs(std::vector<std::pair<std::string, std::string> >    Body);
+		void														prepareResponse();
 };
 
 Request                                                            *FillLines(std::vector<std::string>    SingleRequest);
