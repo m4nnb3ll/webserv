@@ -7,7 +7,9 @@ void handle_response(int sd, Client *client, std::string clientPath, Location *s
 {
     (void)clientPath;
     // check is file or directory
+    std::cout << "=?> " << serverLocation->getRootPath() +  client->_clientRequest->_getRequestURI() ;
     std::cout << "Path is redirect to directory\n";
+    std::cout << serverLocation->getRootPath() + client->_clientRequest->_getRequestURI();
     std::string pathDir = serverLocation->getRootPath() + client->_clientRequest->_getRequestURI();
     DIR *dir = opendir(pathDir.c_str());       // check is directory or file
     if (dir && serverLocation->getAutoIndex()) // if autoindex is on
@@ -44,9 +46,9 @@ void handle_response(int sd, Client *client, std::string clientPath, Location *s
             sendResponseTest("<h1 style=\"color:red\">NOT FOUND 404</h1>", sd, 0);
     }
     std::ifstream file(pathDir);
+    
     if (file.good() && client->_isSend == 0)
     {
-        std::cout << "IM herererer";
         std::map<std::string, std::string> isCgi = serverLocation->getCgi();
         std::map<std::string, std::string>::iterator it = isCgi.begin();
         if (client->_clientRequest->_getRequestURI().find(".php") != std::string::npos && !isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php") // check cgi if exist
@@ -55,8 +57,14 @@ void handle_response(int sd, Client *client, std::string clientPath, Location *s
             sendResponseTest(cgi(serverLocation->getRootPath() + "/" + client->_clientRequest->_getRequestURI(), sd, serverLocation, ClientsInformation), sd, 0);
         }
         else
-            sendResponseTest("not php and prepare for this request (may to be index.html must to show file))", sd, 0);
+            sendResponseTest(serverLocation->getRootPath()   + client->_clientRequest->_getRequestURI() , sd, 1);
         client->_isSend = true;
+    }
+    else if(!file.good() && !dir)
+    {
+        std::cout << "IM herererer";
+
+        sendResponseTest("<h1 style=\"color:red\">NOT FOUND 404</h1>", sd, 0);
     }
 }
 

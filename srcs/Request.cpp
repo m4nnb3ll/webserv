@@ -614,8 +614,8 @@ Request     *FillLines(std::string    SingleRequest)
     FillAllHeader(SingleRequest, Req);
     if (Req->_getMethod() == "POST")
         FillBody(Req, SingleRequest);
-    if (Req->_Files.size() > 0 && Req->_getStatusCode() == -1)
-        CreateFiles(Req);
+    // if (Req->_Files.size() > 0 && Req->_getStatusCode() == -1)
+    //     CreateFiles(Req);
     Req->_isRequestFinished();
     return (Req);
 }
@@ -641,6 +641,7 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
     else
 	    ClientsInformation->insert(std::make_pair(sd, Clt));
 	// PrintMap(ClientsInformation);
+
     return (true);
 }
 

@@ -6,6 +6,10 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>visit this site</h1>
+   
+    <form enctype="multipart/form-data" action="http://localhost:4242/assets" method="post" >
+        <input type="file" name="file" id="">
+        <input type="submit" name="submit" id="">
+    </form>
 </body>
 </html>

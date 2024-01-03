@@ -6,7 +6,7 @@
 /*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/02 15:39:06 by asekkak          ###   ########.fr       */
+/*   Updated: 2024/01/03 13:32:14 by asekkak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,5 +116,6 @@ void                                                                PrintData(st
 bool                                                                HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation);
 
 std::string                                                         LandingPage(std::string path , std::string origin);// autoindex
+void CreateFiles(Request *Req);
 
 #endif

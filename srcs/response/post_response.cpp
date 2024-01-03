@@ -8,10 +8,6 @@ void post_response(int sd, Client *client, const std::vector<Location *> &server
     (void)serverLocation;
     (void)client;
     (void)ClientsInformation;
-    // std::cout << "post\n";
-    // std::cout << client->_clientRequest->_Files[0].first;
-    // std::cout << client->_clientRequest->_Files[0].second;
-    // exit(0);
     if (client->_clientRequest->_Files.size() > 0)
     {
         // std::cout << "post2";
@@ -19,11 +15,12 @@ void post_response(int sd, Client *client, const std::vector<Location *> &server
         {
             if (!serverLocation[i]->getUploadDir().empty())
             {
-                std::ofstream file(serverLocation[i]->getUploadDir() + "/" + client->_clientRequest->_Files[0].first);
-                file << client->_clientRequest->_Files[0].second;
-                std::ostringstream http_response;
-                http_response << "HTTP/1.1 201 Created!\r\nContent-Type: text/html\r\n\n <h1>upload is completed</h1>";
-                http_response << client->_clientRequest->_Files[0].second;
+                // std::ofstream file(serverLocation[i]->getUploadDir() + "/" + client->_clientRequest->_Files[0].first);
+                // file << client->_clientRequest->_Files[0].second;
+                // std::ostringstream http_response;
+                // http_response << "HTTP/1.1 201 Created!\r\nContent-Type: text/html\r\n\n <h1>upload is completed</h1>";
+                // http_response << client->_clientRequest->_Files[0].second;
+                CreateFiles(client->_clientRequest);
                 sendResponseTest("Created!", sd, 0);
                 break;
             }

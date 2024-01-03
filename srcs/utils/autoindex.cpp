@@ -41,7 +41,8 @@ std::string  LandingPage(std::string path, std::string origin)
     {
         if (entry->d_name[0] != '.')
         {
-            
+            if(origin == "/")
+                origin = "";
             std::string link = "http://localhost:4242" + origin + "/" + entry->d_name;
             std::cout << "link  " << link;
             ss << "<li  ><a class=\"link\" href=\"" << link << "\">" << entry->d_name << "</a></li>\n";

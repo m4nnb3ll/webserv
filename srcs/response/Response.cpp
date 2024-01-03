@@ -117,26 +117,19 @@ void sendResponseTest(std::string message, int sd, int isHtml)
     else
     {
 
-        char buffer[2048];
         std::string res;
         std::string path = message;
         path = message;
-        int fd = open(path.c_str(), O_RDONLY);
-        if (fd > 0)
+        std::ifstream ifile(path);
+        std::stringstream ss;
+        if (1)
         {
-
-            std::cout << fd;
+            ss << ifile.rdbuf();
             std::cout << "in send funtion" << path << " \n";
-            size_t z = read(fd, buffer, 2048);
-            for (size_t i = 0; i < z; i++)
-            {
-                res += buffer[i];
-            }
-
-            std::string content("<html><body><h1>" + res + "</h1></body></html>");
-            http_response << "Content-Length: " << content.size();
+            http_response << "Content-Length: " << ss.str().size();
             http_response << "\r\n\r\n"
-                          << content;
+                          << ss.str();
+            
             send(sd, http_response.str().c_str(), http_response.str().size(), 0);
         }
         else
@@ -159,4 +152,8 @@ void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
     {
         post_response(sd, client, serverLocation, ClientsInformation);
     }
+    // else if (client && client->_clientRequest->_getMethod() == "DELETE") // ==> method POST
+    // {
+    //     post_response(sd, client, serverLocation, ClientsInformation);
+    // }
 }
