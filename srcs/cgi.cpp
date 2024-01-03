@@ -16,7 +16,7 @@ std::map<std::string, std::string> initEnv(int sd, Location *serverLocation, std
     env["GATEWAY_INTERFACE"] = "CGI/1.1";
     env["SCRIPT_NAME"] = serverLocation->getRootPath();     // take a virtual path /myapp/cgi/script.py
     env["SCRIPT_FILENAME"] = serverLocation->getRootPath(); // take a abolute path /var/www/html/myapp/cgi/script.py
-    env["REQUEST_METHOD"] = client->_clientRequest->_getMethod();
+    env["REQUEST_METHOD"] = client->_clientRequest->getMethod();
     env["CONTENT_LENGTH"] = oss.str(); // take body
     env["CONTENT_TYPE"] = client->_clientRequest->_getHeader()["Content-Type"];  // --> header : Content Type
     env["PATH_INFO"] = client->_clientRequest->_getRequestURI(); //might need some change, using config path/contentLocation
@@ -110,7 +110,7 @@ std::string cgi(std::string file, int sd, Location *serverLocation, std::map<int
 //     const std::vector<Location *> &serverLocation = server->getLocations(); // get location
 //     Client *client = ClientsInformation[sd];
  
-//     if (client && client->_clientRequest->_getMethod() == "GET" && client->_isSend != true)
+//     if (client && client->_clientRequest->getMethod() == "GET" && client->_isSend != true)
 //     {
 //          std::ifstream file((serverLocation[0]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
 

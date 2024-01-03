@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:10 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/31 21:36:44 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2024/01/03 22:47:03 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,13 +42,13 @@ void PrintMap(std::map<int, Client *> *Map)
 		std::cout << "RequestLine : " << iter->second->_clientRequest->_getRequestLine() << std::endl;
 		std::cout << "RequestURI : " << iter->second->_clientRequest->_getRequestURI() << std::endl;
 		std::cout << "Query : " << iter->second->_clientRequest->_getQuery() << std::endl;
-		std::cout << "Method : " << iter->second->_clientRequest->_getMethod() << std::endl;
+		std::cout << "Method : " << iter->second->_clientRequest->getMethod() << std::endl;
 		std::cout << "HTTPVersion : " << iter->second->_clientRequest->_getHTTPVersion() << std::endl;
 		std::cout << "StatusCode : " << iter->second->_clientRequest->_getStatusCode() << std::endl;
 		std::cout << "Connection : " << iter->second->_clientRequest->_getConnection() << std::endl;
 		std::cout << "TransferEncoding : " << iter->second->_clientRequest->_getTransferEncoding() << std::endl;
 		std::cout << "Connection : " << iter->second->_clientRequest->_getConnection() << std::endl;
-        if (iter->second->_clientRequest->_getMethod() == "POST")
+        if (iter->second->_clientRequest->getMethod() == "POST")
         {
             std::cout << "ContentType : " << iter->second->_clientRequest->_getContentType() << std::endl;
             std::cout << "ContentLength : " << iter->second->_clientRequest->_getContentLength() << std::endl;
@@ -66,7 +66,7 @@ void PrintMap(std::map<int, Client *> *Map)
 		std::cout << "\n<-------------------Header End------------------>" << std::endl;
 
 		std::cout << "\n<-------------------Body Begin------------------>\n" << std::endl;
-        if (iter->second->_clientRequest->_getMethod() == "POST")
+        if (iter->second->_clientRequest->getMethod() == "POST")
 		    iter->second->_clientRequest->_printVectorOfPairs(iter->second->_clientRequest->_getBody());
 		
 		iter->second->_clientRequest->_printVectorOfPairs(iter->second->_clientRequest->_Files);

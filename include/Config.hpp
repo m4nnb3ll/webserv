@@ -3,7 +3,6 @@
 #include <ft_common.h>
 #include "Server.hpp"
 #include "Printers.hpp"
-
 #include "Client.hpp"//added by mbouyahy
 
 class	Printers;

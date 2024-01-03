@@ -54,7 +54,7 @@ std::string                                         Request::_getHTTPVersion() c
 
 std::string                                         Request::getHost() const { return (_host); }
 
-std::string                                         Request::_getMethod() const { return (_method); }
+std::string                                         Request::getMethod() const { return (_method); }
 
 std::string                                         Request::_getConnection() const { return (_connection); }
 
@@ -70,6 +70,7 @@ size_t                                              Request::_getContentLength()
 
 std::string                                         Request::_getReasonPhrase() const { return (_reasonPhrase); }
 
+Response*											Request::getResponse() const { return (_response); }
 
 void                                                Request::_setTransferEncoding(std::string value) { _transferEncoding = value;  }
 
@@ -98,6 +99,9 @@ void                                                Request::_setConnection(std:
 void                                                Request::_setQuery(std::string value){ _query = value; }
 
 void                                                Request::_setReasonPhrase(std::string value) { _reasonPhrase = value; }
+
+void												Request::setResponse(Response *response) { _response = response; }
+
 
 bool SearchLine(std::string Line, std::string Content)
 {
@@ -595,7 +599,7 @@ Request     *FillLines(std::string    SingleRequest)
     Req->_fillRequestURI();
     Req->_fillQuery();
     FillAllHeader(SingleRequest, Req);
-    if (Req->_getMethod() == "POST")
+    if (Req->getMethod() == "POST")
         FillBody(Req, SingleRequest);
     if (Req->_Files.size() > 0 && Req->_getStatusCode() == -1)
         CreateFiles(Req);
@@ -625,37 +629,9 @@ bool    HandleRequest(std::string _readStr, int sd, Config* conf)
     else
 	    sdToClient.insert(std::make_pair(sd, Clt));
 	Req->setLocation(sd, conf);
-	Req->prepareResponse();
+	Req->setResponse(new Response(Req));
+	// To see later what to return
 	return (true);
-}
-
-void	_checkLocation()
-{
-	if (!_response.isFinished())
-	{
-		if (!_location)
-			_response.setFinished(STATUS_NOT_FOUND);
-		else if (_location -> getRedirect())
-			_response.setFinished(STATUS_MOVED);
-	}
-}
-
-void	_checkFinalMsg()
-{
-	std::ostringstream	oSS;
-	if (_response.getContent().empty())
-	{
-		oSS << "HTTP/1.1" << " " << _response.getStatusCode() << " " << "OK" << "\r\n";
-		_finalMsg = oSS.str();
-	}
-}
-
-// Stopped here
-void	Request::prepareResponse()
-{
-	_response = new Response();
-	_checkLocation()
-	_checkFinalMsg();
 }
 
 void	Request::setLocation(int sd, Config* conf)

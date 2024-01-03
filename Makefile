@@ -16,8 +16,8 @@ FILES =	main.cpp \
 		ServersSocket.cpp \
 		Location.cpp \
 		run.cpp \
-		Request.cpp \
 		Client.cpp \
+		Request.cpp \
 		Response.cpp \
 		utils/autoindex.cpp  \
 

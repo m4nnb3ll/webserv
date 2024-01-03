@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/03 15:34:26 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/03 22:54:01 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,11 @@
 
 #include <ft_common.h>
 #include "Config.hpp"
+#include "Response.hpp"
 
 class	Config;
 class	Location;
-
+class	Response;
 /* Allowed Methods ( GET | POST | DELETE )
 
 The CRLF is the standard line ending sequence in HTTP.
@@ -66,7 +67,7 @@ class Request
         std::string                                                 _getRequestLine() const;
         std::string                                                 _getHTTPVersion() const;
 		std::string                                                 getHost() const;
-        std::string                                                 _getMethod() const;
+        std::string                                                 getMethod() const;
         std::string                                                 _getContentType() const;
         std::string                                                 _getConnection() const;
         std::string                                                 _getQuery() const;
@@ -74,6 +75,7 @@ class Request
         size_t                                                      _getContentLength() const;
         int                                                         _getStatusCode() const;
         Location													*getLocation() const;
+		Response*													getResponse() const;
 
         //Setters
         void                                                        _setTransferEncoding(std::string value);
@@ -91,6 +93,7 @@ class Request
         void                                                        _setBody(std::vector<std::pair<std::string, std::string> > value);
         void                                                        _setQueryStringParam(std::vector<std::pair<std::string, std::string> > value);
 		void														setLocation(int sd, Config* conf);
+		void														setResponse(Response *);
 
         std::vector<std::string>                                    _lines;
         std::string                                                 _allBody;

@@ -132,6 +132,7 @@ void Config::_parseServerNames(std::istringstream &iss, Server* srv)
 		throw(std::runtime_error("error in server_names"));
 }
 
+// I ll need to check error_pages presence later
 void	_parseErrorPages(std::istringstream &iss, Server* srv)
 {
 	std::string	errorPage;
