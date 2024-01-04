@@ -18,6 +18,7 @@ class Location
 		int									_redirectCode;
 		Server*								_server;
 		std::map<std::string, std::string>	_cgi;
+		// thinking about adding a cgi bool to optimize
 		std::string							_uploadDir;
 	public :
 		Location(Server*);

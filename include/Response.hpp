@@ -21,10 +21,11 @@ class Response
 		Request		*_request;
 		bool		_isFinished;
 		int			_statusCode;
+		std::string	_resource;
 		std::string	_content;
 		std::string	_contentType;
 		std::string	_finalMsg;
-		
+
 		// Methods
 		// bool		isError();
 		void		_finishWithCode(enum e_status_code code);

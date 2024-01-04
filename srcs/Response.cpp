@@ -87,13 +87,74 @@ void	Response::_checkMethod()
 
 void	Response::_checkResource()
 {
-	struct stat	buffer;
+	struct stat	fileStat;
 	std::string resourcePath;
 
-	if (_isFinished) return ;
-	resourcePath = _request->getLocation()->getRootPath() + _request->_getRequestURI();
-	if (stat(resourcePath.c_str(), &buffer) != 0)
+	if (_isFinished) return ; // will check this later
+	_resource = _request->getLocation()->getRootPath() + _request->_getRequestURI();
+	if (stat(_resource.c_str(), &fileStat) != 0)
 		_finishWithCode(STATUS_NOT_FOUND);
+	else if (S_ISDIR(fileStat.st_mode))
+		_handleDir();
+	else
+		_handleFile();
+}
+
+// STOPPED HERE
+bool	Response::_dirHasIndexFiles(std::vector<std::string> indexes)
+{
+	DIR				*dir;
+	struct dirent	*entry;
+	std::string		dirFiles;
+
+	dir = opendir(_resource.c_str());
+	if (!dir)
+		throw (std::runtime_error("Error opening the dir\n"));
+	while (entry = readdir(dir))
+		dirFiles.puhs_back(entry->d_name);
+	for (size_t i = 0; i < indexes.size(); i++)
+		if (std::find(dirFiles.begin(), dirFiles.end(), indexes[i] != dirFiles.end())
+			return (true);
+	return (false);
+}
+
+void	_runCgi()
+{
+	// cgi logic will go here
+}
+
+void	Response::_checkCgi()
+{
+	std::map<std::string, std::string>	cgi;
+
+	if (cgi.size())
+	{
+		_runCgi();
+	}
+	else
+		_respondWithFile();
+}
+
+void	Response::_handleFile()
+{
+	_checkCgi();
+}
+
+void	Response::_handleDir()
+{
+	std::string	uri;
+
+	uri = _request->_getRequestURI();
+	if (uri[uri.size() - 1] != '/')
+		_request->getMethod() == "DELETE"
+			? _finishWithCode(STATUS_CONFLICT)
+			: _finishWithCode(STATUS_MOVED);
+	else if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
+		_checkCgi();
+	else
+		_request->getLocation()->getAutoIndex()
+			?	_autoIndexDir()
+			:	_finishWithCode(STATUS_FORBIDDEN);
 }
 
 void	Response::_handleGet()
@@ -103,7 +164,10 @@ void	Response::_handleGet()
 
 void	Response::_handlePost()
 {
-	_checkResource();
+	if (_canUpload())
+		_uploadFile();
+	else
+		_checkResource();
 }
 
 void	Response::_handleDelete()
