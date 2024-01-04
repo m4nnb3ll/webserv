@@ -4,6 +4,8 @@ Response::Response(Request* request)
 	:	_request(request), _isFinished(false), _statusCode(STATUS_SUCCESS)
 {
 	_checkLocation();
+	_checkResource();
+	_checkCgi();
 	_checkMethod();
 	std::cout << "The status code is: " << YELLOW << _statusCode << RESET_COLOR << std::endl;
 }
@@ -59,6 +61,7 @@ void	Response::_checkLocation()
 {
 	Location	*location;
 
+	if (_isFinished) return ;
 	location = _request->getLocation();
 	if (!location)
 		_finishWithCode(STATUS_NOT_FOUND);
@@ -95,9 +98,9 @@ void	Response::_checkResource()
 	if (stat(_resource.c_str(), &fileStat) != 0)
 		_finishWithCode(STATUS_NOT_FOUND);
 	else if (S_ISDIR(fileStat.st_mode))
-		_handleDir();
+		_resourceType = RT_DIR;
 	else
-		_handleFile();
+		_resourceType = RT_FILE;
 }
 
 // STOPPED HERE
@@ -113,7 +116,7 @@ bool	Response::_dirHasIndexFiles(std::vector<std::string> indexes)
 	while (entry = readdir(dir))
 		dirFiles.puhs_back(entry->d_name);
 	for (size_t i = 0; i < indexes.size(); i++)
-		if (std::find(dirFiles.begin(), dirFiles.end(), indexes[i] != dirFiles.end())
+		if (std::find(dirFiles.begin(), dirFiles.end(), indexes[i] != dirFiles.end()))
 			return (true);
 	return (false);
 }
@@ -123,16 +126,35 @@ void	_runCgi()
 	// cgi logic will go here
 }
 
+bool	Response::_extensionMatch(const std::string& extension, const std::string& filename)
+{
+	size_t	dotPos = filename.find_last_of('.');
+
+    if (dotPos != std::string::npos)
+		return (filename.substr(dotPos) == extension);
+    return (false); // No extension found in filename
+}
+
 void	Response::_checkCgi()
 {
-	std::map<std::string, std::string>	cgi;
+	std::map<std::string, std::string>					cgi;
+	std::map<std::string, std::string>::const_iterator	it;
+	bool												match = false;
 
+	if (_isFinished) return ;
+	cgi = _request->getCgi();
 	if (cgi.size())
 	{
-		_runCgi();
+		if (_resourceType == RT_FILE)
+		{
+			// _extensionMatch
+			for (it = cgi.begin(); (it != cgi.end()) && !match ; ++it)
+				match = _extensionMatch(it->first, _resource);
+			if (match) _runCgi();
+		}
+		else if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
+			// STOPPED HERE
 	}
-	else
-		_respondWithFile();
 }
 
 void	Response::_handleFile()
@@ -144,17 +166,26 @@ void	Response::_handleDir()
 {
 	std::string	uri;
 
-	uri = _request->_getRequestURI();
-	if (uri[uri.size() - 1] != '/')
-		_request->getMethod() == "DELETE"
-			? _finishWithCode(STATUS_CONFLICT)
-			: _finishWithCode(STATUS_MOVED);
-	else if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
-		_checkCgi();
+	if (_request->getMethod() == "DELETE")
+	{
+		uri = _request->_getRequestURI();
+		if (uri[uri.size() - 1] != '/')
+			_finishWithCode(STATUS_CONFLICT);
+		else
+			_checkCgi();
+	}
 	else
-		_request->getLocation()->getAutoIndex()
-			?	_autoIndexDir()
-			:	_finishWithCode(STATUS_FORBIDDEN);
+	{
+		uri = _request->_getRequestURI();
+		if (uri[uri.size() - 1] != '/')
+			_finishWithCode(STATUS_MOVED);
+		else if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
+			_checkCgi();
+		else
+			_request->getLocation()->getAutoIndex()
+				?	_autoIndexDir()
+				:	_finishWithCode(STATUS_FORBIDDEN);
+	}
 }
 
 void	Response::_handleGet()
