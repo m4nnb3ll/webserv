@@ -140,6 +140,7 @@ void	Response::_checkCgi()
 	std::map<std::string, std::string>					cgi;
 	std::map<std::string, std::string>::const_iterator	it;
 	bool												match = false;
+	std::vector<std::string>							indexes;
 
 	if (_isFinished) return ;
 	cgi = _request->getCgi();
@@ -152,8 +153,21 @@ void	Response::_checkCgi()
 				match = _extensionMatch(it->first, _resource);
 			if (match) _runCgi();
 		}
-		else if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
-			// STOPPED HERE
+		else
+		{
+			indexes = _request->getLocation()->getIndexes();
+			// I am gonna add a _index that contains the name of the index file
+			// or make _dirHasIndexFiles return a filename
+			if (_dirHasIndexFiles(indexes))
+			{
+				// thinking about placing the following logic in a function
+				// or place the extension check inside the _runCgi function
+				for (it = cgi.begin(); (it != cgi.end()) && !match ; ++it)
+					match = _extensionMatch(it->first, _resource + _index);
+				if (match) _runCgi();
+			}
+
+		}
 	}
 }
 
@@ -190,20 +204,37 @@ void	Response::_handleDir()
 
 void	Response::_handleGet()
 {
-	_checkResource();
+	if (_resourceType == RT_FILE)
+		_returnFile();
+	else
+	{
+		_checkDirURI();
+		if (!_isFinished)
+		{
+			_dirHasIndexFiles()
+				?	_returnFile()
+				:	_checkAutoIndex();
+		}
+	}
 }
 
 void	Response::_handlePost()
 {
-	if (_canUpload())
-		_uploadFile();
-	else
-		_checkResource();
+	_canUpload()
+		?	_uploadFile()
+		:	_finishWithCode(STATUS_FORBIDDEN);
 }
 
 void	Response::_handleDelete()
 {
-	_checkResource();
+	if (_resourceType == RT_FILE)
+		_deleteFile();
+	else
+	{
+		_checkDirURI();
+		if (!_isFinished)
+			_tryDeleteDir();
+	}
 }
 
 // Leave to later
