@@ -2,8 +2,8 @@
 
 Cgi::Cgi(Request *request, Location *config)
 {
-    // this->_body = request->_getBody();
-    std::cout << "cgi\n";
+    // this->_body = request->_getBody(); 
+    std::cout << "cgi\n"; 
 
     this->_initEnv(request, config);
 }
