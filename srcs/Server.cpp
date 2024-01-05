@@ -43,3 +43,8 @@ const std::vector<Location*>&	Server::getLocations() const
 {
 	return (_locations);
 }
+
+std::map<int, const std::string>	Server::getErrorPages() const
+{
+	return (_errorPages);
+}

@@ -20,6 +20,7 @@ class	Server
 		void									addLocation(Location *location);
 		const std::vector<std::string>&			getServerNames() const;
 		const std::vector<Location*>&			getLocations() const;
+		std::map<int, const std::string>		getErrorPages() const;
 	private:
 		std::vector<std::string>				_serverNames;
 		std::map<int, const std::string>		_errorPages;

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.hpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/05 16:10:04 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/05 16:20:49 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include <ft_common.h>
@@ -14,9 +26,15 @@ enum e_resource_type
 enum e_status_code
 {
 	STATUS_SUCCESS = 200,
+	STATUS_CREATED = 201,
+	STATUS_NO_CONTENT = 204,
 	STATUS_MOVED = 301,
+	STATUS_FORBIDDEN = 403,
 	STATUS_NOT_FOUND = 404,
-	STATUS_NOT_ALLOWED = 405
+	STATUS_NOT_ALLOWED = 405,
+	STATUS_CONFLICT = 409,
+	STATUS_INTERNAL_ERR = 500,
+	STATUS_NOT_IMPLEMENTED = 501
 };
 
 
@@ -24,6 +42,8 @@ class Response
 {
 	public :
 		Response(Request* request);
+		bool		isFinished() const;
+		std::string	getContent() const;
 	private:
 		Request					*_request;
 		bool					_isFinished;
@@ -33,15 +53,30 @@ class Response
 		std::string				_content;
 		std::string				_contentType;
 		std::string				_finalMsg;
+		std::string				_index;
 
 		// Methods
 		// bool		isError();
-		void		_finishWithCode(enum e_status_code code);
-		std::string	_genStatusMsg(int code);
-		void		_checkLocation();
-		void		_checkMethod();
-		void		_checkResource();
 		void		_handleGet();
 		void		_handlePost();
 		void		_handleDelete();
+		std::string	_getStatusCodeMsg();
+		std::string	_getErrFilePath();
+		void		_errorCheck();
+		void		_finishWithCode(enum e_status_code code);
+		void		_checkLocation();
+		void		_redirect();
+		void		_checkMethod();
+		void		_checkResource();
+		bool		_dirHasIndexFiles(std::vector<std::string> indexes);
+		void		_runCgi();
+		bool		_extensionMatch(const std::string& extension, const std::string& filename);
+		void		_checkCgi();
+		void		_checkDirURI();
+		void		_returnFile(std::string filename);
+		void		_returnDirAutoIndex();
+		void		_checkAutoIndex();
+		void		_uploadFile();
+		void		_deleteFile();
+		void		_tryDeleteDir();
 };

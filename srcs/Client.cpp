@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:10 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/03 22:47:03 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/05 16:14:45 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,11 @@ Client::Client()
 Client::~Client()
 {
 	// delete ClientRequest;
+}
+
+Response*	Client::getResponse() const
+{
+	return (_clientRequest->getResponse());
 }
 
 Client::Client(const Client &other){ (void)other; }
@@ -40,7 +45,7 @@ void PrintMap(std::map<int, Client *> *Map)
         std::cout << "Map Size : " << Map->size() << std::endl;
 		std::cout << "Sd : " << iter->first << std::endl;
 		std::cout << "RequestLine : " << iter->second->_clientRequest->_getRequestLine() << std::endl;
-		std::cout << "RequestURI : " << iter->second->_clientRequest->_getRequestURI() << std::endl;
+		std::cout << "RequestURI : " << iter->second->_clientRequest->_getUri() << std::endl;
 		std::cout << "Query : " << iter->second->_clientRequest->_getQuery() << std::endl;
 		std::cout << "Method : " << iter->second->_clientRequest->getMethod() << std::endl;
 		std::cout << "HTTPVersion : " << iter->second->_clientRequest->_getHTTPVersion() << std::endl;

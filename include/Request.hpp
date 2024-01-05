@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/03 22:54:01 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/05 16:02:03 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,11 +63,12 @@ class Request
         std::vector<std::pair<std::string, std::string> >           _getBody() const;
         std::vector<std::pair<std::string, std::string> >           _getQueryStringParam() const;
         std::string                                                 _getTransferEncoding() const;
-        std::string                                                 _getRequestURI() const;
+        std::string                                                 _getUri() const;
         std::string                                                 _getRequestLine() const;
         std::string                                                 _getHTTPVersion() const;
 		std::string                                                 getHost() const;
         std::string                                                 getMethod() const;
+		std::string/*will retrieve the content of the body*/		getContent() const;
         std::string                                                 _getContentType() const;
         std::string                                                 _getConnection() const;
         std::string                                                 _getQuery() const;

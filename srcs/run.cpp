@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   run.cpp                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/05 16:10:00 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/05 16:10:01 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Config.hpp"
 #include "Request.hpp"
 
@@ -23,23 +35,20 @@ void Config::_readRequest(int sd)
 
 void Config::_sendResponse(int sd)
 {
-	std::ostringstream	http_response;
+	Client	*client = _sdToClient[sd];
 
-	http_response << "HTTP/1.1 200 OK\r\n";
-	http_response << "Content-Type: image/jpeg\r\n";
-	std::ifstream file("assets/test_image.jpg"); // Replace with your file path
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string content = buffer.str();
-	// std::string	content(fileContent);
-	http_response << "Content-Length: " << content.size();
-	http_response << "\r\n\r\n" << content;
+	if (!client) return ;
+	if (client->getResponse()->isFinished())
+	{
+		std::string	content;
 
-	int ret = send(sd, http_response.str().c_str(), http_response.str().size(), 0);
-	if (ret == -1) {
-		_rmPollfd(sd);
-		std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
-		return;
+		content = client->getResponse()->getContent();
+		int ret = send(sd, content.c_str(), content.size(), 0);
+		if (ret == -1) {
+			_rmPollfd(sd);
+			std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
+			return;
+		}
 	}
 }
 

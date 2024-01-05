@@ -46,7 +46,7 @@ std::vector<std::pair<std::string, std::string> >   Request::_getBody() const { 
 
 std::map<std::string, std::string>                  Request::_getHeader() const { return (_header); }
 
-std::string                                         Request::_getRequestURI() const { return (_uri); }
+std::string                                         Request::_getUri() const { return (_uri); }
 
 std::string                                         Request::_getRequestLine() const { return (_requestLine); }
 
@@ -673,4 +673,10 @@ void PrintData(std::vector<std::vector<std::string> >  RequestData)
     for (std::vector<std::vector<std::string> >::iterator iter = RequestData.begin() ; iter != RequestData.end(); iter++)
         for (std::vector<std::string>::iterator SimpleIter = iter->begin() ; SimpleIter != iter->end(); SimpleIter++)
             std::cout << "* : " << *SimpleIter << std::endl;
+}
+
+std::string/*will retrieve the content of the body*/		Request::getContent() const
+{
+	// for test only
+	return ("SIMPLE TEXT MESSAGE\n");
 }

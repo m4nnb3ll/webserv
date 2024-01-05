@@ -7,28 +7,63 @@ Response::Response(Request* request)
 	_checkResource();
 	_checkCgi();
 	_checkMethod();
+	_errorCheck();
 	std::cout << "The status code is: " << YELLOW << _statusCode << RESET_COLOR << std::endl;
 }
 
-// bool	Response::isError()
-// {
-// 	if (_statusCode >= 400 && _statusCode < 600)
-// 		return (true);
-// 	return (false);
-// }
-
-void	Response::_finishWithCode(enum e_status_code code)
+bool	Response::isFinished() const
 {
-	_statusCode = code;
-	_isFinished = true;
+	return (_isFinished);
 }
 
-std::string	Response::_genStatusMsg(int code)
+std::string	Response::getContent() const
 {
-	switch (code)
+	return (_content);
+}
+
+void	Response::_handleGet()
+{
+	if (_isFinished) return ;
+	if (_resourceType == RT_FILE)
+		_returnFile(_resource);
+	else
 	{
-		case 200:
-			return ("OK");
+		_checkDirURI();
+		if (!_isFinished)
+		{
+			_dirHasIndexFiles(_request->getLocation()->getIndexes())
+				?	_returnFile(_resource + _index)
+				:	_checkAutoIndex();
+		}
+	}
+}
+
+void	Response::_handlePost()
+{
+	if (_isFinished) return ;
+	_request->getLocation()->getUploadDir().empty()
+		?	_finishWithCode(STATUS_FORBIDDEN)
+		:	_uploadFile();
+}
+
+void	Response::_handleDelete()
+{
+	if (_isFinished) return ;
+	if (_resourceType == RT_FILE)
+		_deleteFile();
+	else
+	{
+		_checkDirURI();
+		if (!_isFinished)
+			_tryDeleteDir();
+	}
+}
+
+
+std::string	Response::_getStatusCodeMsg()
+{
+	switch (_statusCode)
+	{
 		case 201:
 			return ("Created");
 		case 204:
@@ -57,6 +92,86 @@ std::string	Response::_genStatusMsg(int code)
 	}
 }
 
+std::string	Response::_getErrFilePath()
+{
+	std::map<int, const std::string>	errorPages;
+	std::string							filePath;
+
+	errorPages = _request->getLocation()->getServer()->getErrorPages();
+	filePath = errorPages[_statusCode];
+	if (!filePath.empty())
+		return (filePath);
+	else
+	{
+		std::ostringstream	oSS;
+
+		oSS << DEFAULT_ERR_DIR << _statusCode << ".html";
+		return (oSS.str());
+	}
+}
+
+void	Response::_errorCheck()
+{
+	if (_statusCode >= 400 && _statusCode < 600)
+	{
+		std::string			errFilePath = _getErrFilePath();
+		std::ifstream		file(errFilePath.c_str(), std::ios::binary);
+		std::ostringstream	finalStream;
+		std::ostringstream	fileContent;
+
+		fileContent << file.rdbuf(); // Read the file content into a stringstream
+		// Print HTTP response headers
+		finalStream << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
+		finalStream << "Content-Length: " << fileContent.str().length() << "\r\n";
+		// The following will be changed later to reflect the actual content-type
+		finalStream << "Content-Type: text/html\r\n"; // Change content type as needed
+		finalStream << "\r\n"; // Empty line to separate headers from content
+		// Print file content
+		finalStream << fileContent.str();
+		file.close();
+		_content = finalStream.str();
+	}
+}
+
+// bool	Response::isError()
+// {
+// 	if (_statusCode >= 400 && _statusCode < 600)
+// 		return (true);
+// 	return (false);
+// }
+
+void	Response::_finishWithCode(enum e_status_code code)
+{
+	_statusCode = code;
+	if (_statusCode == STATUS_CREATED
+		|| _statusCode == STATUS_NO_CONTENT || _statusCode == STATUS_MOVED)
+	{
+		std::ostringstream	oSS;
+		oSS << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
+		if (_statusCode == STATUS_MOVED)
+		{
+			oSS << "Location: " << _resource + "/" << "\r\n";
+			oSS << "Content-Length: 0\r\n";
+		}
+		oSS << "\r\n";
+		_content = oSS.str();
+	}
+	_isFinished = true;
+}
+
+void	Response::_redirect()
+{
+	std::ostringstream	oSS;
+
+	_statusCode = STATUS_MOVED;
+	oSS << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
+	oSS << "Location: " << _request->getLocation()->getRedirectPath() << "\r\n";
+	oSS << "Content-Length: 0\r\n";
+	oSS << "\r\n";
+	_content = oSS.str();
+	_isFinished = true;
+}
+
 void	Response::_checkLocation()
 {
 	Location	*location;
@@ -66,7 +181,7 @@ void	Response::_checkLocation()
 	if (!location)
 		_finishWithCode(STATUS_NOT_FOUND);
 	else if (location -> getRedirect())
-		_finishWithCode(STATUS_MOVED);
+		_redirect();
 	else
 	{
 		const std::vector<std::string>&	allowMethods = location->getAllowMethods();
@@ -80,6 +195,7 @@ void	Response::_checkMethod()
 {
 	std::string	method = _request->getMethod();
 
+	if (_isFinished) return ;
 	if (method == "GET")
 		_handleGet();
 	else if (method == "POST")
@@ -94,7 +210,7 @@ void	Response::_checkResource()
 	std::string resourcePath;
 
 	if (_isFinished) return ; // will check this later
-	_resource = _request->getLocation()->getRootPath() + _request->_getRequestURI();
+	_resource = _request->getLocation()->getRootPath() + _request->_getUri();
 	if (stat(_resource.c_str(), &fileStat) != 0)
 		_finishWithCode(STATUS_NOT_FOUND);
 	else if (S_ISDIR(fileStat.st_mode))
@@ -103,27 +219,36 @@ void	Response::_checkResource()
 		_resourceType = RT_FILE;
 }
 
-// STOPPED HERE
 bool	Response::_dirHasIndexFiles(std::vector<std::string> indexes)
 {
-	DIR				*dir;
-	struct dirent	*entry;
-	std::string		dirFiles;
+	DIR											*dir;
+	struct dirent								*entry;
+	std::vector<std::string>					dirFiles;
+	std::vector<std::string>::const_iterator	indexIt;
 
 	dir = opendir(_resource.c_str());
 	if (!dir)
 		throw (std::runtime_error("Error opening the dir\n"));
-	while (entry = readdir(dir))
-		dirFiles.puhs_back(entry->d_name);
+	while ((entry = readdir(dir)))
+		dirFiles.push_back(entry->d_name);
 	for (size_t i = 0; i < indexes.size(); i++)
-		if (std::find(dirFiles.begin(), dirFiles.end(), indexes[i] != dirFiles.end()))
+	{
+		if ((indexIt = std::find(dirFiles.begin(), dirFiles.end(), indexes[i]))
+			!= dirFiles.end())
+		{
+			_index = *indexIt;
 			return (true);
+		}
+	}
 	return (false);
 }
 
-void	_runCgi()
+void	Response::_runCgi()
 {
 	// cgi logic will go here
+	std::cout << BLUE << "CGI RUNNING..." << RESET_COLOR << std::endl;
+	_statusCode = STATUS_SUCCESS;
+	_isFinished = true;
 }
 
 bool	Response::_extensionMatch(const std::string& extension, const std::string& filename)
@@ -143,7 +268,7 @@ void	Response::_checkCgi()
 	std::vector<std::string>							indexes;
 
 	if (_isFinished) return ;
-	cgi = _request->getCgi();
+	cgi = _request->getLocation()->getCgi();
 	if (cgi.size())
 	{
 		if (_resourceType == RT_FILE)
@@ -155,10 +280,7 @@ void	Response::_checkCgi()
 		}
 		else
 		{
-			indexes = _request->getLocation()->getIndexes();
-			// I am gonna add a _index that contains the name of the index file
-			// or make _dirHasIndexFiles return a filename
-			if (_dirHasIndexFiles(indexes))
+			if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
 			{
 				// thinking about placing the following logic in a function
 				// or place the extension check inside the _runCgi function
@@ -171,69 +293,114 @@ void	Response::_checkCgi()
 	}
 }
 
-void	Response::_handleFile()
+void	Response::_checkDirURI()
 {
-	_checkCgi();
+	std::string	uri = _request->_getUri();
+
+	if (uri[uri.size() - 1] != '/')
+		_request->getMethod() == "DELETE"
+			?	_finishWithCode(STATUS_CONFLICT)
+			:	_finishWithCode(STATUS_MOVED);
 }
 
-void	Response::_handleDir()
+void	Response::_returnFile(std::string filename)
 {
-	std::string	uri;
-
-	if (_request->getMethod() == "DELETE")
+	std::ifstream file(filename.c_str(), std::ios::binary);
+    
+	if (file)
 	{
-		uri = _request->_getRequestURI();
-		if (uri[uri.size() - 1] != '/')
-			_finishWithCode(STATUS_CONFLICT);
-		else
-			_checkCgi();
+		std::ostringstream	finalStream;
+		std::ostringstream	fileContent;
+		fileContent << file.rdbuf(); // Read the file content into a stringstream
+		// Print HTTP response headers
+		finalStream << "HTTP/1.1 200 OK\r\n";
+		finalStream << "Content-Length: " << fileContent.str().length() << "\r\n";
+		// The following will be changed later to reflect the actual content-type
+		finalStream << "Content-Type: application/octet-stream\r\n"; // Change content type as needed
+		finalStream << "\r\n"; // Empty line to separate headers from content
+		// Print file content
+		finalStream << fileContent.str();
+		file.close();
+		_content = finalStream.str();
+		_finishWithCode(STATUS_SUCCESS);
 	}
 	else
-	{
-		uri = _request->_getRequestURI();
-		if (uri[uri.size() - 1] != '/')
-			_finishWithCode(STATUS_MOVED);
-		else if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
-			_checkCgi();
-		else
-			_request->getLocation()->getAutoIndex()
-				?	_autoIndexDir()
-				:	_finishWithCode(STATUS_FORBIDDEN);
-	}
+		_finishWithCode(STATUS_INTERNAL_ERR);
 }
 
-void	Response::_handleGet()
+void	Response::_returnDirAutoIndex()
 {
-	if (_resourceType == RT_FILE)
-		_returnFile();
+    DIR*			dir;
+    struct dirent*	entry;
+
+    dir = opendir(_resource.c_str());
+    if (dir != NULL)
+	{
+		std::ostringstream	finalStream;
+		std::ostringstream	html;
+
+        html << "<html><head><title>Directory Index</title></head><body><h1>Index of The Directory</h1><ul>";
+        while ((entry = readdir(dir)) != NULL)
+            html << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>";
+		html << "</ul></body></html>";
+		closedir(dir);
+
+		finalStream << "HTTP/1.1 200 OK\r\n";
+		finalStream << "Content-Length: " << html.str().length() << "\r\n";
+		finalStream << "Content-Type: text/html\r\n";
+		finalStream << "\r\n";
+		finalStream << html.str();
+		_content = finalStream.str();
+		_finishWithCode(STATUS_SUCCESS);
+    }
+	else
+		_finishWithCode(STATUS_INTERNAL_ERR);
+}
+
+void	Response::_checkAutoIndex()
+{
+	if (_request->getLocation()->getAutoIndex())
+		_returnDirAutoIndex();
+	else
+		_finishWithCode(STATUS_FORBIDDEN);
+}
+
+void	Response::_uploadFile()
+{
+	std::ofstream file("filename");
+
+	if (file.is_open())
+	{
+		file << _request->getContent();
+		file.close();
+		_finishWithCode(STATUS_CREATED);
+	}
+	else
+		_finishWithCode(STATUS_INTERNAL_ERR);
+}
+
+void	Response::_deleteFile()
+{
+	int	deletionRes;
+
+	deletionRes = std::remove(_resource.c_str());
+	if (deletionRes == 0)
+		_finishWithCode(STATUS_NO_CONTENT);
+	else
+		_finishWithCode(STATUS_INTERNAL_ERR);
+}
+
+void	Response::_tryDeleteDir()
+{
+	if (access(_resource.c_str(), W_OK) != 0)
+		_finishWithCode(STATUS_FORBIDDEN);
 	else
 	{
-		_checkDirURI();
-		if (!_isFinished)
-		{
-			_dirHasIndexFiles()
-				?	_returnFile()
-				:	_checkAutoIndex();
-		}
-	}
-}
-
-void	Response::_handlePost()
-{
-	_canUpload()
-		?	_uploadFile()
-		:	_finishWithCode(STATUS_FORBIDDEN);
-}
-
-void	Response::_handleDelete()
-{
-	if (_resourceType == RT_FILE)
-		_deleteFile();
-	else
-	{
-		_checkDirURI();
-		if (!_isFinished)
-			_tryDeleteDir();
+		std::string	command = "rm -rf " + _resource;
+		int result = std::system(command.c_str());
+		(result == 0)
+			?	_finishWithCode(STATUS_NO_CONTENT)
+			:	_finishWithCode(STATUS_INTERNAL_ERR);
 	}
 }
 

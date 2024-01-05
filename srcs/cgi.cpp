@@ -19,7 +19,7 @@ std::map<std::string, std::string> initEnv(int sd, Location *serverLocation, std
     env["REQUEST_METHOD"] = client->_clientRequest->getMethod();
     env["CONTENT_LENGTH"] = oss.str(); // take body
     env["CONTENT_TYPE"] = client->_clientRequest->_getHeader()["Content-Type"];  // --> header : Content Type
-    env["PATH_INFO"] = client->_clientRequest->_getRequestURI(); //might need some change, using config path/contentLocation
+    env["PATH_INFO"] = client->_clientRequest->_getUri(); //might need some change, using config path/contentLocation
     env["QUERY_STRING"] = client->_clientRequest->_getQuery();
     // env["REQUEST_URI"] = request.getPath() + request.getQuery(); // uri complet must add when morad push it project
 	env["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -112,27 +112,27 @@ std::string cgi(std::string file, int sd, Location *serverLocation, std::map<int
  
 //     if (client && client->_clientRequest->getMethod() == "GET" && client->_isSend != true)
 //     {
-//          std::ifstream file((serverLocation[0]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
+//          std::ifstream file((serverLocation[0]->getRootPath() + client->_clientRequest->_getUri()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
 
 //          for (size_t a = 0; a < serverLocation.size(); a++)
 //         {
 //             std::map<std::string, std::string> isCgi = serverLocation[a]->getCgi();
 //             std::map<std::string, std::string>::iterator it = isCgi.begin();
-//             std::ifstream file((serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
-//             if (client->_clientRequest->_getRequestURI() == serverLocation[a]->getPath() && client->_isSend != true)    // if / == /
+//             std::ifstream file((serverLocation[a]->getRootPath() + client->_clientRequest->_getUri()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
+//             if (client->_clientRequest->_getUri() == serverLocation[a]->getPath() && client->_isSend != true)    // if / == /
 //             {                                                                                                        // handle if autoindex on or off , and check is file or not
 //                 std::vector<std::string> path;
-//                 std::string pathDir = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
+//                 std::string pathDir = serverLocation[a]->getRootPath() + client->_clientRequest->_getUri();
 //                 DIR *dir = opendir(pathDir.c_str());
 
-//                 path.push_back(client->_clientRequest->_getRequestURI());
+//                 path.push_back(client->_clientRequest->_getUri());
 //                 if ((dir || path.back() == "/") && client->_isSend != true) // if a directory
 //                 {
 //                     std::cout << "is a directory\n";
 //                     if (serverLocation[a]->getAutoIndex()) // autoindex ON
 //                     {
 
-//                         sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
+//                         sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getUri()), sd, 0);
 //                         client->_isSend = true;
 //                         break;
 //                     }
@@ -176,7 +176,7 @@ std::string cgi(std::string file, int sd, Location *serverLocation, std::map<int
 //             else if (file.good() && client->_isSend != true) // if file
 //             {
 
-//                 std::string path = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
+//                 std::string path = serverLocation[a]->getRootPath() + client->_clientRequest->_getUri();
 //                 std::cout << path;
 //                 if (path.find(".php") != std::string::npos)
 //                 {
@@ -187,7 +187,7 @@ std::string cgi(std::string file, int sd, Location *serverLocation, std::map<int
 //                 }
 //                 else if (serverLocation[a]->getAutoIndex()) // autoindex ON
 //                 {
-//                     sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
+//                     sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getUri()), sd, 0);
 //                     client->_isSend = true;
 //                     break;
 //                 }
