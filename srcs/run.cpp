@@ -6,12 +6,24 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:00 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/05 16:10:01 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/05 18:13:10 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 #include "Request.hpp"
+
+/*TEST*/
+template <typename K, typename V>
+void printMap(const std::map<K, V>& inputMap)
+{
+    std::cout << "Map Contents:" << std::endl;
+    typename std::map<K, V>::const_iterator it;
+    for (it = inputMap.begin(); it != inputMap.end(); ++it) {
+        std::cout << "Key: " << it->first << ", Value: " << it->second << std::endl;
+    }
+}
+/*TEST*/
 
 void Config::_readRequest(int sd)
 {
@@ -29,15 +41,21 @@ void Config::_readRequest(int sd)
 		std::cout << "reading: client[" << sd <<"] disconnected" << std::endl;
 		return;
 	}
-	// Stopped here
+	std::cout << "The fist time!" << std::endl;
+	// printMap(_sdToClient);
 	HandleRequest(buffer, sd, this);
+	// printf("The client[%d] is >>%p<< wtf?!\n", sd, _sdToClient[sd]);
 }
 
 void Config::_sendResponse(int sd)
 {
-	Client	*client = _sdToClient[sd];
+	Client								*client;
+	std::map<int, Client *>::iterator   iter;
+	
+	iter = _sdToClient.find(sd);
+	if (iter == _sdToClient.end()) return ;
 
-	if (!client) return ;
+	client = _sdToClient[sd];
 	if (client->getResponse()->isFinished())
 	{
 		std::string	content;

@@ -6,7 +6,7 @@ RESET_COLOR			:=	\033[0m
 
 NAME = webserv
 
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98 # UNCOMMENT LATER !!!! -std=c++98
 FSANITIZE = -g3 -fsanitize=address
 
 FILES =	main.cpp \

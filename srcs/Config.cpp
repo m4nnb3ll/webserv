@@ -14,6 +14,9 @@ Config::Config(const std::string &input)
 {
 	std::string	line;
 
+	/* FOR TESTING */
+	std::cout << "The size of the map is:" << _sdToClient.size() << std::endl;
+	/* FOR TESTING */
 	_openConfig(input);
 	while (std::getline(_configFile, line))
 	{
@@ -337,6 +340,7 @@ std::map<int, Client*>	Config::getSdToClient() const
 
 void	Config::insertToSdToClient(std::pair<int, Client*> pair)
 {
+	std::cout << RED << "INSERTION!!!" << RESET_COLOR << std::endl;
 	_sdToClient.insert(pair);
 }
 

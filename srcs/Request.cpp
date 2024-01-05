@@ -607,6 +607,18 @@ Request     *FillLines(std::string    SingleRequest)
     return (Req);
 }
 
+/*TEST*/
+template <typename K, typename V>
+void printMap(const std::map<K, V>& inputMap)
+{
+    std::cout << "Map Contents:" << std::endl;
+    typename std::map<K, V>::const_iterator it;
+    for (it = inputMap.begin(); it != inputMap.end(); ++it) {
+        std::cout << "Key: " << it->first << ", Value: " << it->second << std::endl;
+    }
+}
+/*TEST*/
+
 bool    HandleRequest(std::string _readStr, int sd, Config* conf)
 {
 	Request				                *Req;
@@ -614,6 +626,9 @@ bool    HandleRequest(std::string _readStr, int sd, Config* conf)
     std::map<int, Client *>::iterator   iter;
 	std::map<int, Client*> sdToClient = conf->getSdToClient();
     
+	std::cout << "Printing the client map" << std::endl;
+	// printMap(sdToClient);
+	// exit(11);
     Clt = new Client();
 	Req = FillLines(_readStr);
     if (!Req->_isFinished)
@@ -625,9 +640,19 @@ bool    HandleRequest(std::string _readStr, int sd, Config* conf)
 	Clt->_clientRequest = Req;
     iter = sdToClient.find(sd);
     if (iter != sdToClient.end())
-        iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
+    {
+		// std::cout << "I already found the client What?!" << std::endl;
+		// printMap(sdToClient);
+		iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
+	}
     else
-	    sdToClient.insert(std::make_pair(sd, Clt));
+	{
+		std::cout << "I get here What" << std::endl;
+		conf->insertToSdToClient(std::make_pair(sd, Clt));
+		printf("I insert the client What?!\n");
+		printf("The client[%d] is: >>%p<< What?!\n", sd, Clt);
+		fflush(stdout);
+	}
 	Req->setLocation(sd, conf);
 	Req->setResponse(new Response(Req));
 	// To see later what to return

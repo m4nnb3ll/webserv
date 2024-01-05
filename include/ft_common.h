@@ -16,7 +16,10 @@
 # include <signal.h>
 # include <cstring>
 # include <dirent.h>
-#include <sys/wait.h>
+# include <sys/wait.h>
+# include <algorithm>
+
+// DONT FORGET TO CHECK THE MAKEFILE!!!
 
 # define RED		"\033[0;31m"
 # define GREEN		"\033[0;32m"
