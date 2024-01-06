@@ -29,6 +29,11 @@ Location &Location::operator=(const Location &copy)
 	return (*this);
 }
 
+Server*	Location::getServer() const
+{
+	return (this->_server);
+}
+
 std::string		Location::getRootPath() const
 {
 	return (this->_rootPath);
@@ -76,6 +81,8 @@ void	Location::setPath(std::istringstream &iss)
 
 	if (!(iss >> path))
 		throw std::runtime_error("Invalid ressource type");
+	if (path[0] != '/' || path[path.size() - 1] != '/')
+		throw std::runtime_error("A Location path must start and end with a '/'");
 	_path = path;
 }
 

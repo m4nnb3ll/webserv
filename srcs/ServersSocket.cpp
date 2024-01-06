@@ -31,3 +31,18 @@ const std::vector<Server*>&	ServersSocket::getServers() const
 {
 	return (_servers);
 }
+
+Server*	ServersSocket::getServer(std::string host) const
+{
+	std::istringstream	iSS(host);
+	std::string			hostname;
+
+	std::getline(iSS, hostname, ':');
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		const std::vector<std::string>& serversNames = _servers[i]->getServerNames();
+		for (size_t j = 0; j < serversNames.size(); j++)
+			if (serversNames[j] == hostname) return (_servers[i]);
+	}
+	return (_servers[0]);
+}

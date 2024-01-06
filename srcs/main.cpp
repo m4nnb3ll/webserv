@@ -11,12 +11,11 @@ void	ft_sigint_handler(int c)
 
 int main(int ac, char **av)
 {
+	(void)ac;
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGINT, ft_sigint_handler);
-	if (ac != 2)
-		Printers::print_err("Wrong number of args!");
-	
-	std::string configPath(av[1]);
+
+	std::string configPath(av[1] ? av[1] : "c.conf");
 	try
 	{
 		Config conf(configPath);

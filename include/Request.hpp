@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/31 21:39:04 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2024/01/05 16:02:03 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,12 @@
 #define REQUEST_HPP
 
 #include <ft_common.h>
-#include "Client.hpp"
+#include "Config.hpp"
+#include "Response.hpp"
 
-class Client;
+class	Config;
+class	Location;
+class	Response;
 
 /* Allowed Methods ( GET | POST | DELETE )
 
@@ -24,8 +27,6 @@ The CRLF is the standard line ending sequence in HTTP.
 CRLF "\r\n" //Carriage Return && Line Feed
 LF "\n" // Line Feed
 CR "\r" // Carriage Return
-
-*/
 
 #define FILE_MAX_SIZE 10000000 //10MB (For Testing Only)
 
@@ -41,11 +42,17 @@ class Request
         std::string                                                 _httpVersion;
         std::string                                                 _contentType;
         std::string                                                 _requestURI;
+		    std::string													_host;
+        std::string                                                 _contentType;
+        std::string                                                 _uri;
+
         std::string                                                 _connection;
         std::string                                                 _reasonPhrase;
         std::string                                                 _transferEncoding;
         size_t                                                      _contentLength;
         int                                                         _statusCode;
+		  Location													*_location;
+		  Response													*_response;
     public:
         Request();
         ~Request();
@@ -62,13 +69,21 @@ class Request
         std::string                                                 _getRequestLine() const;
         std::string                                                 _getHTTPVersion() const;
         std::string                                                 _getMethod() const;
+        std::string                                                 _getUri() const;
+        std::string                                                 _getRequestLine() const;
+        std::string                                                 _getHTTPVersion() const;
+		    std::string                                                 getHost() const;
+        std::string                                                 getMethod() const;
+		    std::string/*will retrieve the content of the body*/		    getContent() const;
         std::string                                                 _getContentType() const;
         std::string                                                 _getConnection() const;
         std::string                                                 _getQuery() const;
         std::string                                                 _getReasonPhrase() const;
         size_t                                                      _getContentLength() const;
         int                                                         _getStatusCode() const;
-        
+
+        Location													                          *getLocation() const;
+		    Response*													                          getResponse() const;
         //Setters
         void                                                        _setTransferEncoding(std::string value);
         void                                                        _setRequestURI(std::string value);
@@ -84,8 +99,9 @@ class Request
         void                                                        _setHeader(std::map<std::string, std::string> value);
         void                                                        _setBody(std::vector<std::pair<std::string, std::string> > value);
         void                                                        _setQueryStringParam(std::vector<std::pair<std::string, std::string> > value);
+		    void														                            setLocation(int sd, Config* conf);
+		    void														                            setResponse(Response *);
 
-        
         std::vector<std::string>                                    _lines;
         std::string                                                 _allBody;
         std::string                                                 _allHeader;
@@ -109,11 +125,12 @@ class Request
 
         //Functions For Testing Only
         void                                                        _printVectorOfPairs(std::vector<std::pair<std::string, std::string> >    Body);
+		void														prepareResponse();
 };
 
 Request                                                            *FillLines(std::vector<std::string>    SingleRequest);
 void                                                                PrintData(std::vector<std::vector<std::string> >  RequestData);
-bool                                                                HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation);
+bool                                                                HandleRequest(std::string _readStr, int sd, Config*);
 
 std::string                                                         LandingPage(std::string path);// autoindex
 

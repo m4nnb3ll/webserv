@@ -1,236 +1,421 @@
-#include <ft_common.h>
-#include "Config.hpp"
-#include "Request.hpp"
 
-std::map<std::string, std::string> initEnv(int sd, Location *serverLocation, std::map<int, Client *> ClientsInformation)
+#include "Response.hpp"
+
+Response::Response(Request* request)
+	:	_request(request), _isFinished(false), _statusCode(STATUS_SUCCESS)
 {
-    std::cout << "\nim in initEnv fun";
-    Client *client = ClientsInformation[sd];
-    std::cout << "\nlocation path -> " << serverLocation->getAllowMethods()[0];
-    std::cout << "\nget Content type -> " << client->_clientRequest->_getHeader()["Content-Type"];
-    std::cout << "\nget query -> " << client->_clientRequest->_getQuery();
-    std::map<std::string, std::string> env;
-    std::stringstream oss;
-    oss << client->_clientRequest->_bodySize;
-    env["REDIRECT_STATUS"] = "200";
-    env["GATEWAY_INTERFACE"] = "CGI/1.1";
-    env["SCRIPT_NAME"] = serverLocation->getRootPath();     // take a virtual path /myapp/cgi/script.py
-    env["SCRIPT_FILENAME"] = serverLocation->getRootPath(); // take a abolute path /var/www/html/myapp/cgi/script.py
-    env["REQUEST_METHOD"] = client->_clientRequest->_getMethod();
-    env["CONTENT_LENGTH"] = oss.str(); // take body
-    env["CONTENT_TYPE"] = client->_clientRequest->_getHeader()["Content-Type"];  // --> header : Content Type
-    env["PATH_INFO"] = client->_clientRequest->_getRequestURI(); //might need some change, using config path/contentLocation
-    env["QUERY_STRING"] = client->_clientRequest->_getQuery();
-    // env["REQUEST_URI"] = request.getPath() + request.getQuery(); // uri complet must add when morad push it project
-	env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	env["SERVER_SOFTWARE"] = "Weebserv/1.0";
-    return(env);
+	_checkLocation();
+	_checkResource();
+	_checkCgi();
+	_checkMethod();
+	_errorCheck();
+	std::cout << "The status code is: " << YELLOW << _statusCode << RESET_COLOR << std::endl;
 }
 
-char					**getEnvCStyleArray(std::map<std::string, std::string> env) {
-	char	**_env = new char*[env.size() + 1];
-	int	j = 0;
-	for (std::map<std::string, std::string>::const_iterator i =  env.begin(); i !=  env.end(); i++) {
-		std::string	element = i->first + "=" + i->second;
-		_env[j] = new char[element.size() + 1];
-		_env[j] = strcpy(_env[j], (const char*)element.c_str());
-		j++;
+bool	Response::isFinished() const
+{
+	return (_isFinished);
+}
+
+std::string	Response::getContent() const
+{
+	return (_content);
+}
+
+void	Response::_handleGet()
+{
+	if (_isFinished) return ;
+	if (_resourceType == RT_FILE)
+		_returnFile(_resource);
+	else
+	{
+		_checkDirURI();
+		if (!_isFinished)
+		{
+			_dirHasIndexFiles(_request->getLocation()->getIndexes())
+				?	_returnFile(_resource + _index)
+				:	_checkAutoIndex();
+		}
 	}
-	_env[j] = NULL;
-	return _env;
 }
 
-std::string cgi(std::string file, int sd, Location *serverLocation, std::map<int, Client *> ClientsInformation)
+void	Response::_handlePost()
 {
-
-    std::cout << "\n->> inside CGI <<- \n";
-    getEnvCStyleArray(initEnv(sd, serverLocation, ClientsInformation));// inital env
-    int pipes[2];
-    (void)file;
-    if (pipe(pipes) < 0)
-        perror("pipe failed");
-    pid_t pid = fork();
-    std::string buffer;
-    if (pid == 0)
-    {
-        close(pipes[0]);
-        dup2(pipes[1], 1);
-
-        execlp("/usr/bin/php", "/usr/bin/php", file.c_str(), NULL);
-        perror("failed to exec");
-        exit(EXIT_FAILURE);
-    }
-    else if (pid > 0)
-    {
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
-        {
-
-            close(pipes[1]);
-            dup2(pipes[0], 0);
-            char res[2048];
-
-            int z = read(pipes[0], res, 2048);
-            for (int i = 0; i < z; i++)
-            {
-                // std::cout << res[i];
-                buffer += res[i];
-            }
-
-            close(pipes[0]);
-            close(pipes[1]);
-        }
-        else
-            buffer = "INTERNAL SERVER 500";
-    }
-
-    return (buffer);
+	if (_isFinished) return ;
+	_request->getLocation()->getUploadDir().empty()
+		?	_finishWithCode(STATUS_FORBIDDEN)
+		:	_uploadFile();
 }
 
-void sendResponseTest(std::string message, int sd, int isText)
+void	Response::_handleDelete()
 {
-    std::ostringstream http_response;
-    (void)isText;
-    http_response << "HTTP/1.1 200 OK\r\n";
-    http_response << "Content-Type: text/html\r\n";
-
-    std::string content(message);
-    http_response << "Content-Length: " << content.size();
-    http_response << "\r\n\r\n"
-                  << content;
-    send(sd, http_response.str().c_str(), http_response.str().size(), 0);
+	if (_isFinished) return ;
+	if (_resourceType == RT_FILE)
+		_deleteFile();
+	else
+	{
+		_checkDirURI();
+		if (!_isFinished)
+			_tryDeleteDir();
+	}
 }
 
-void Config::_sendResponse(int sd, std::map<int, Client *> ClientsInformation)
+std::string	Response::_getStatusCodeMsg()
 {
-    ServersSocket *sS = _sdToServersSocket[sd];
-    Server *server = sS->getServers()[0];
-    std::vector<std::string> serverName = server->getServerNames();         //  servers
-    const std::vector<Location *> &serverLocation = server->getLocations(); // get location
-    Client *client = ClientsInformation[sd];
- 
-    if (client && client->_clientRequest->_getMethod() == "GET" && client->_isSend != true)
-    {
-         std::ifstream file((serverLocation[0]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
+	switch (_statusCode)
+	{
+		case 201:
+			return ("Created");
+		case 204:
+			return ("No Content");
+		case 301:
+			return ("Moved Permanently");
+		case 400:
+			return ("Bad Request");
+		case 403:
+			return ("Forbidden");
+		case 404:
+			return ("Not Found");
+		case 405:
+			return ("Method Not Allowed");
+		case 409:
+			return ("Conflict");
+		case 413:
+			return ("Content Too Large");
+		case 414:
+			return ("URI Too Long");
+		case 500:
+			return ("Internal Server Error");
+		default :
+			return ("Not Implemented");
 
-         for (size_t a = 0; a < serverLocation.size(); a++)
-        {
-            std::map<std::string, std::string> isCgi = serverLocation[a]->getCgi();
-            std::map<std::string, std::string>::iterator it = isCgi.begin();
-            std::ifstream file((serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()).c_str()); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<=========== OPEN FILE AND CHECK EXTENSION
-            if (client->_clientRequest->_getRequestURI() == serverLocation[a]->getPath() && client->_isSend != true)    // if / == /
-            {                                                                                                        // handle if autoindex on or off , and check is file or not
-                std::vector<std::string> path;
-                std::string pathDir = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
-                DIR *dir = opendir(pathDir.c_str());
-
-                path.push_back(client->_clientRequest->_getRequestURI());
-                if ((dir || path.back() == "/") && client->_isSend != true) // if a directory
-                {
-                    std::cout << "is a directory\n";
-                    if (serverLocation[a]->getAutoIndex()) // autoindex ON
-                    {
-
-                        sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
-                        client->_isSend = true;
-                        break;
-                    }
-                    else if (client->_isSend != true) // check indexes
-                    {
-                        size_t count = 0;
-                        for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
-                        {
-                            std::cout << "------------";
-                            std::ifstream file((serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]).c_str());
-                            std::cout << "search index = " << serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i] << "\n";
-                            // std::cout << "file found = " << file.good() << "\n";
-                            if (file.good()) // if found this index
-                            {
-                                std::cout << "im here\n";
-                                if (serverLocation[a]->getIndexes()[i].find(".php") != std::string::npos)
-                                {
-                                    if (!isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php")
-                                    {
-                                        sendResponseTest(cgi(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, serverLocation[a], ClientsInformation), sd, 0);
-                                        client->_isSend = true;
-                                        break;
-                                    }
-                                    else
-                                        sendResponseTest("internal server error 500", sd, 0);
-                                    break;
-                                }
-                                else
-                                { // another extension
-                                    sendResponseTest(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, 1);
-                                    client->_isSend = true;
-                                    break;
-                                }
-                            }
-                            else
-                                count++;
-                        }
-                    }
-                }
-            }
-            else if (file.good() && client->_isSend != true) // if file
-            {
-
-                std::string path = serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI();
-                std::cout << path;
-                if (path.find(".php") != std::string::npos)
-                {
-                    std::cout << ">>> IM2 HERE  <<<\n";
-                    sendResponseTest(cgi(path, sd, serverLocation[a], ClientsInformation), sd, 0);
-                    client->_isSend = true;
-                    break;
-                }
-                else if (serverLocation[a]->getAutoIndex()) // autoindex ON
-                {
-                    sendResponseTest(LandingPage(serverLocation[a]->getRootPath() + client->_clientRequest->_getRequestURI()), sd, 0);
-                    client->_isSend = true;
-                    break;
-                }
-                else // check indexes
-                {
-                    size_t count = 0;
-                    for (size_t i = 0; i < serverLocation[a]->getIndexes().size(); i++)
-                    {
-                        std::ifstream file((serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i]).c_str());
-                        std::cout << "search index = " << serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i] << "\n";
-                        // std::cout << "file found = " << file.good() << "\n";
-                        if (file.good()) // if found this index
-                        {
-                            std::cout << "im here\n";
-                            if (serverLocation[a]->getIndexes()[i].find(".php") != std::string::npos)
-                            {
-                                if (!isCgi.empty() && it->first == ".php" && it->second == "/usr/bin/php")
-                                {
-                                    sendResponseTest(cgi(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, serverLocation[a], ClientsInformation), sd, 0);
-                                    client->_isSend = true;
-                                }
-                                else
-                                    sendResponseTest("internal server error 500", sd, 0);
-                                break;
-                            }
-                            else
-                            { // another extension
-                                sendResponseTest(serverLocation[a]->getRootPath() + "/" + serverLocation[a]->getIndexes()[i], sd, 1);
-                                client->_isSend = true;
-                                break;
-                            }
-                        }
-                        else
-                            count++;
-                    }
-                    if (count == serverLocation[a]->getIndexes().size() && client->_isSend != true) // not found this indexes
-                        break;
-                }
-            }
-        }
-        if (client && !client->_isSend)
-        {
-            sendResponseTest("<h1 style=\"color:red\">NOT FOUND 404</h1>", sd, 0);
-        }
-    }
+	}
 }
+
+std::string	Response::_getErrFilePath()
+{
+	std::map<int, const std::string>	errorPages;
+	std::string							filePath;
+
+	errorPages = _request->getLocation()->getServer()->getErrorPages();
+	filePath = errorPages[_statusCode];
+	if (!filePath.empty())
+		return (filePath);
+	else
+	{
+		std::ostringstream	oSS;
+
+		oSS << DEFAULT_ERR_DIR << _statusCode << ".html";
+		return (oSS.str());
+	}
+}
+
+void	Response::_errorCheck()
+{
+	if (_statusCode >= 400 && _statusCode < 600)
+	{
+		std::string			errFilePath = _getErrFilePath();
+		std::ifstream		file(errFilePath.c_str(), std::ios::binary);
+		std::ostringstream	finalStream;
+		std::ostringstream	fileContent;
+
+		fileContent << file.rdbuf(); // Read the file content into a stringstream
+		// Print HTTP response headers
+		finalStream << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
+		finalStream << "Content-Length: " << fileContent.str().length() << "\r\n";
+		// The following will be changed later to reflect the actual content-type
+		finalStream << "Content-Type: text/html\r\n"; // Change content type as needed
+		finalStream << "\r\n"; // Empty line to separate headers from content
+		// Print file content
+		finalStream << fileContent.str();
+		file.close();
+		_content = finalStream.str();
+	}
+}
+
+// bool	Response::isError()
+// {
+// 	if (_statusCode >= 400 && _statusCode < 600)
+// 		return (true);
+// 	return (false);
+// }
+
+void	Response::_finishWithCode(enum e_status_code code)
+{
+	_statusCode = code;
+	if (_statusCode == STATUS_CREATED
+		|| _statusCode == STATUS_NO_CONTENT || _statusCode == STATUS_MOVED)
+	{
+		std::ostringstream	oSS;
+		oSS << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
+		if (_statusCode == STATUS_MOVED)
+		{
+			oSS << "Location: " << _resource + "/" << "\r\n";
+			oSS << "Content-Length: 0\r\n";
+		}
+		oSS << "\r\n";
+		_content = oSS.str();
+	}
+	_isFinished = true;
+}
+
+void	Response::_redirect()
+{
+	std::ostringstream	oSS;
+
+	_statusCode = STATUS_MOVED;
+	oSS << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
+	oSS << "Location: " << _request->getLocation()->getRedirectPath() << "\r\n";
+	oSS << "Content-Length: 0\r\n";
+	oSS << "\r\n";
+	_content = oSS.str();
+	_isFinished = true;
+}
+
+void	Response::_checkLocation()
+{
+	Location	*location;
+
+	if (_isFinished) return ;
+	location = _request->getLocation();
+	if (!location)
+		_finishWithCode(STATUS_NOT_FOUND);
+	else if (location -> getRedirect())
+		_redirect();
+	else
+	{
+		const std::vector<std::string>&	allowMethods = location->getAllowMethods();
+		if (std::find(allowMethods.begin(), allowMethods.end(), _request->getMethod())
+			== allowMethods.end())
+			_finishWithCode(STATUS_NOT_ALLOWED);
+	}
+}
+
+void	Response::_checkMethod()
+{
+	std::string	method = _request->getMethod();
+
+	if (_isFinished) return ;
+	if (method == "GET")
+		_handleGet();
+	else if (method == "POST")
+		_handlePost();
+	else
+		_handleDelete();
+}
+
+void	Response::_checkResource()
+{
+	struct stat	fileStat;
+	std::string resourcePath;
+
+	if (_isFinished) return ; // will check this later
+	_resource = _request->getLocation()->getRootPath() + _request->_getUri();
+	if (stat(_resource.c_str(), &fileStat) != 0)
+		_finishWithCode(STATUS_NOT_FOUND);
+	else if (S_ISDIR(fileStat.st_mode))
+		_resourceType = RT_DIR;
+	else
+		_resourceType = RT_FILE;
+}
+
+bool	Response::_dirHasIndexFiles(std::vector<std::string> indexes)
+{
+	DIR											*dir;
+	struct dirent								*entry;
+	std::vector<std::string>					dirFiles;
+	std::vector<std::string>::const_iterator	indexIt;
+
+	dir = opendir(_resource.c_str());
+	if (!dir)
+		throw (std::runtime_error("Error opening the dir\n"));
+	while ((entry = readdir(dir)))
+		dirFiles.push_back(entry->d_name);
+	for (size_t i = 0; i < indexes.size(); i++)
+	{
+		if ((indexIt = std::find(dirFiles.begin(), dirFiles.end(), indexes[i]))
+			!= dirFiles.end())
+		{
+			_index = *indexIt;
+			return (true);
+		}
+	}
+	return (false);
+}
+
+void	Response::_runCgi()
+{
+	// cgi logic will go here
+	std::cout << BLUE << "CGI RUNNING..." << RESET_COLOR << std::endl;
+	_statusCode = STATUS_SUCCESS;
+	_isFinished = true;
+}
+
+bool	Response::_extensionMatch(const std::string& extension, const std::string& filename)
+{
+	size_t	dotPos = filename.find_last_of('.');
+
+    if (dotPos != std::string::npos)
+		return (filename.substr(dotPos) == extension);
+    return (false); // No extension found in filename
+}
+
+void	Response::_checkCgi()
+{
+	std::map<std::string, std::string>					cgi;
+	std::map<std::string, std::string>::const_iterator	it;
+	bool												match = false;
+	std::vector<std::string>							indexes;
+
+	if (_isFinished) return ;
+	cgi = _request->getLocation()->getCgi();
+	if (cgi.size())
+	{
+		if (_resourceType == RT_FILE)
+		{
+			// _extensionMatch
+			for (it = cgi.begin(); (it != cgi.end()) && !match ; ++it)
+				match = _extensionMatch(it->first, _resource);
+			if (match) _runCgi();
+		}
+		else
+		{
+			if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
+			{
+				// thinking about placing the following logic in a function
+				// or place the extension check inside the _runCgi function
+				for (it = cgi.begin(); (it != cgi.end()) && !match ; ++it)
+					match = _extensionMatch(it->first, _resource + _index);
+				if (match) _runCgi();
+			}
+
+		}
+	}
+}
+
+void	Response::_checkDirURI()
+{
+	std::string	uri = _request->_getUri();
+
+	if (uri[uri.size() - 1] != '/')
+		_request->getMethod() == "DELETE"
+			?	_finishWithCode(STATUS_CONFLICT)
+			:	_finishWithCode(STATUS_MOVED);
+}
+
+void	Response::_returnFile(std::string filename)
+{
+	std::ifstream file(filename.c_str(), std::ios::binary);
+    
+	if (file)
+	{
+		std::ostringstream	finalStream;
+		std::ostringstream	fileContent;
+		fileContent << file.rdbuf(); // Read the file content into a stringstream
+		// Print HTTP response headers
+		finalStream << "HTTP/1.1 200 OK\r\n";
+		finalStream << "Content-Length: " << fileContent.str().length() << "\r\n";
+		// The following will be changed later to reflect the actual content-type
+		finalStream << "Content-Type: application/octet-stream\r\n"; // Change content type as needed
+		finalStream << "\r\n"; // Empty line to separate headers from content
+		// Print file content
+		finalStream << fileContent.str();
+		file.close();
+		_content = finalStream.str();
+		_finishWithCode(STATUS_SUCCESS);
+	}
+	else
+		_finishWithCode(STATUS_INTERNAL_ERR);
+}
+
+void	Response::_returnDirAutoIndex()
+{
+    DIR*			dir;
+    struct dirent*	entry;
+
+    dir = opendir(_resource.c_str());
+    if (dir != NULL)
+	{
+		std::ostringstream	finalStream;
+		std::ostringstream	html;
+
+        html << "<html><head><title>Directory Index</title></head><body><h1>Index of The Directory</h1><ul>";
+        while ((entry = readdir(dir)) != NULL)
+            html << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>";
+		html << "</ul></body></html>";
+		closedir(dir);
+
+		finalStream << "HTTP/1.1 200 OK\r\n";
+		finalStream << "Content-Length: " << html.str().length() << "\r\n";
+		finalStream << "Content-Type: text/html\r\n";
+		finalStream << "\r\n";
+		finalStream << html.str();
+		_content = finalStream.str();
+		_finishWithCode(STATUS_SUCCESS);
+    }
+	else
+		_finishWithCode(STATUS_INTERNAL_ERR);
+}
+
+void	Response::_checkAutoIndex()
+{
+	if (_request->getLocation()->getAutoIndex())
+		_returnDirAutoIndex();
+	else
+		_finishWithCode(STATUS_FORBIDDEN);
+}
+
+void	Response::_uploadFile()
+{
+	std::ofstream file("filename");
+
+	if (file.is_open())
+	{
+		file << _request->getContent();
+		file.close();
+		_finishWithCode(STATUS_CREATED);
+	}
+	else
+		_finishWithCode(STATUS_INTERNAL_ERR);
+}
+
+void	Response::_deleteFile()
+{
+	int	deletionRes;
+
+	deletionRes = std::remove(_resource.c_str());
+	if (deletionRes == 0)
+		_finishWithCode(STATUS_NO_CONTENT);
+	else
+		_finishWithCode(STATUS_INTERNAL_ERR);
+}
+
+void	Response::_tryDeleteDir()
+{
+	if (access(_resource.c_str(), W_OK) != 0)
+		_finishWithCode(STATUS_FORBIDDEN);
+	else
+	{
+		std::string	command = "rm -rf " + _resource;
+		int result = std::system(command.c_str());
+		(result == 0)
+			?	_finishWithCode(STATUS_NO_CONTENT)
+			:	_finishWithCode(STATUS_INTERNAL_ERR);
+	}
+}
+
+// Leave to later
+// void	Response::_checkFinalMsg()
+// {
+// 	int					statusCode;
+// 	std::ostringstream	oSS;
+
+// 	statusCode = _response.getStatusCode();
+// 	oSS << "HTTP/1.1" << " " << statusCode << " " << _response.genStatusMsg(statusCode) << "\r\n";
+// 	if (_response.getContent().empty())
+// 	{
+// 		_reponse.checkErrorContent();
+// 		oSS << _response.spreadErrorFile
+
+// 	}
+// }

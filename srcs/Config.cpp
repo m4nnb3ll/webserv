@@ -14,6 +14,9 @@ Config::Config(const std::string &input)
 {
 	std::string	line;
 
+	/* FOR TESTING */
+	std::cout << "The size of the map is:" << _sdToClient.size() << std::endl;
+	/* FOR TESTING */
 	_openConfig(input);
 	while (std::getline(_configFile, line))
 	{
@@ -82,7 +85,7 @@ bool isValidIPv4(const std::string& ip) {
     return true;
 }
 
-std::string	Config::_getListen(std::istringstream& iss)
+std::string	Config::_extractListen(std::istringstream& iss)
 {
 	std::string			ip;
 	int					portNum;
@@ -114,7 +117,7 @@ bool	Config::_portExists(const std::string& s)
 
 void Config::_parseListen(std::istringstream& iss, Server* srv)
 {
-	const std::string&	port(_getListen(iss));
+	const std::string&	port(_extractListen(iss));
 
 	if (_portExists(port))
 		_portToServersSocket[port]->addServer(srv);
@@ -132,6 +135,7 @@ void Config::_parseServerNames(std::istringstream &iss, Server* srv)
 		throw(std::runtime_error("error in server_names"));
 }
 
+// I ll need to check error_pages presence later
 void	_parseErrorPages(std::istringstream &iss, Server* srv)
 {
 	std::string	errorPage;
@@ -327,4 +331,25 @@ void	Config::_initSockets()
 		_sdToServersSocket.insert(std::make_pair(sockfd, it->second));
 		_addPollfd(sockfd, POLLIN);
 	}
+}
+
+std::map<int, Client*>	Config::getSdToClient() const
+{
+	return (this->_sdToClient);
+}
+
+void	Config::insertToSdToClient(std::pair<int, Client*> pair)
+{
+	std::cout << RED << "INSERTION!!!" << RESET_COLOR << std::endl;
+	_sdToClient.insert(pair);
+}
+
+ServersSocket*	Config::getServersSocket(int sd) const
+{
+	std::map<int, ServersSocket*>
+		::const_iterator	it = _sdToServersSocket.find(sd);
+
+	if (it != _sdToServersSocket.end())
+		return (it->second);
+    return (NULL);
 }

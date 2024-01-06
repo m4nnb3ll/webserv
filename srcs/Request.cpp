@@ -13,6 +13,7 @@
 #include "Request.hpp"
 
 Request::Request()
+	:	_location(NULL)
 {
     _statusCode = -1;
     _bodySize = 0;
@@ -45,13 +46,15 @@ std::vector<std::pair<std::string, std::string> >   Request::_getBody() const { 
 
 std::map<std::string, std::string>                  Request::_getHeader() const { return (_header); }
 
-std::string                                         Request::_getRequestURI() const { return (_requestURI); }
+std::string                                         Request::_getUri() const { return (_uri); }
 
 std::string                                         Request::_getRequestLine() const { return (_requestLine); }
 
 std::string                                         Request::_getHTTPVersion() const { return (_httpVersion); }
 
-std::string                                         Request::_getMethod() const { return (_method); }
+std::string                                         Request::getHost() const { return (_host); }
+
+std::string                                         Request::getMethod() const { return (_method); }
 
 std::string                                         Request::_getConnection() const { return (_connection); }
 
@@ -67,6 +70,7 @@ size_t                                              Request::_getContentLength()
 
 std::string                                         Request::_getReasonPhrase() const { return (_reasonPhrase); }
 
+Response*											Request::getResponse() const { return (_response); }
 
 void                                                Request::_setTransferEncoding(std::string value) { _transferEncoding = value;  }
 
@@ -74,7 +78,7 @@ void                                                Request::_setQueryStringPara
 
 void                                                Request::_setBody(std::vector<std::pair<std::string, std::string> > value){ _body = value; }
 
-void                                                Request::_setRequestURI(std::string value) { _requestURI = value; }
+void                                                Request::_setRequestURI(std::string value) { _uri = value; }
 
 void                                                Request::_setRequestLine(std::string value) { _requestLine= value; }
 
@@ -96,6 +100,8 @@ void                                                Request::_setQuery(std::stri
 
 void                                                Request::_setReasonPhrase(std::string value) { _reasonPhrase = value; }
 
+void												                        Request::setResponse(Response *response) { _response = response; }
+
 bool SearchLine(std::string Line, std::string Content)
 {
     if (Line.find(Content) <= Line.size())
@@ -108,9 +114,9 @@ bool    Request::_isValidURI()
    std::string  uri_Characters;
    
    uri_Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-   for (size_t i = 0; i < _requestURI.size(); i++)
+   for (size_t i = 0; i < _uri.size(); i++)
    {
-       if (uri_Characters.find(_requestURI[i], 0) > uri_Characters.size())
+       if (uri_Characters.find(_uri[i], 0) > uri_Characters.size())
        {
             //400 => Bad Request | Uploading a file that is too large | Invalid Cookies | DNS cache error
             _statusCode = 400;
@@ -119,7 +125,7 @@ bool    Request::_isValidURI()
        }
    }
    //check the size of URI (limit it in 2,048 characters!!!) | 414 URI Too Long
-   if (_requestURI.size() > 2048)//I'm Not Sure About That
+   if (_uri.size() > 2048)//I'm Not Sure About That
    {
        _statusCode = 414;
        _reasonPhrase = "URI Too Long";
@@ -181,6 +187,8 @@ void Request::_splitLine(std::string Line)
         _connection = Value;
     if (SearchLine(Line, "Transfer-Encoding"))//check this later
         _transferEncoding = Value;
+    if (SearchLine(Line, "Host"))//check this later
+        _host = Value;
     _header.insert(std::make_pair(Key, Value));
 }
 
@@ -196,7 +204,7 @@ void Request::_fillRequestURI()
     if (end >= _requestLine.size())
         return ;
     for (size_t i = begin + 1; i < end; i++)
-        _requestURI += _requestLine[i];
+        _uri += _requestLine[i];
     for (size_t i = 0; i < begin; i++)
         _method += _requestLine[i];
     for (size_t i = end + 1; i < _requestLine.size(); i++)
@@ -522,20 +530,20 @@ void Request::_fillQuery()
     size_t          UriEnd;
     std::string     Uri;
 
-    begin = _requestURI.find("?");
-    if (begin > _requestURI.size())
-        UriEnd = _requestURI.size();
+    begin = _uri.find("?");
+    if (begin > _uri.size())
+        UriEnd = _uri.size();
     else
         UriEnd = begin;
     for(size_t i = 0; i < UriEnd; i++)
-        Uri += _requestURI[i];
-    if (begin <= _requestURI.size())
+        Uri += _uri[i];
+    if (begin <= _uri.size())
     {
-        for(size_t i = begin + 1; i < _requestURI.size(); i++)
-            _query += _requestURI[i];
+        for(size_t i = begin + 1; i < _uri.size(); i++)
+            _query += _uri[i];
     }
     _fillQueryStringParam();
-    _requestURI = Uri;
+    _uri = Uri;
 }
 
 void Request::_isRequestFinished()
@@ -612,7 +620,7 @@ Request     *FillLines(std::string    SingleRequest)
     Req->_fillRequestURI();
     Req->_fillQuery();
     FillAllHeader(SingleRequest, Req);
-    if (Req->_getMethod() == "POST")
+    if (Req->getMethod() == "POST")
         FillBody(Req, SingleRequest);
     if (Req->_Files.size() > 0 && Req->_getStatusCode() == -1)
         CreateFiles(Req);
@@ -620,12 +628,28 @@ Request     *FillLines(std::string    SingleRequest)
     return (Req);
 }
 
-bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*ClientsInformation)
+/*TEST*/
+template <typename K, typename V>
+void printMap(const std::map<K, V>& inputMap)
+{
+    std::cout << "Map Contents:" << std::endl;
+    typename std::map<K, V>::const_iterator it;
+    for (it = inputMap.begin(); it != inputMap.end(); ++it) {
+        std::cout << "Key: " << it->first << ", Value: " << it->second << std::endl;
+    }
+}
+/*TEST*/
+
+bool    HandleRequest(std::string _readStr, int sd, Config* conf)
 {
 	Request				                *Req;
     Client                              *Clt;
     std::map<int, Client *>::iterator   iter;
+	std::map<int, Client*> sdToClient = conf->getSdToClient();
     
+	std::cout << "Printing the client map" << std::endl;
+	// printMap(sdToClient);
+	// exit(11);
     Clt = new Client();
 	Req = FillLines(_readStr);
     if (!Req->_isFinished)
@@ -635,13 +659,52 @@ bool    HandleRequest(std::string _readStr, int sd, std::map<int, Client *>	*Cli
         return (false);
     }
 	Clt->_clientRequest = Req;
-    iter = ClientsInformation->find(sd);
-    if (iter != ClientsInformation->end())
-        iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
+    iter = sdToClient.find(sd);
+    if (iter != sdToClient.end())
+    {
+		// std::cout << "I already found the client What?!" << std::endl;
+		// printMap(sdToClient);
+		iter->second = Clt;//update this line if you work with vector of Requests! | leaks here
+	}
     else
-	    ClientsInformation->insert(std::make_pair(sd, Clt));
-	// PrintMap(ClientsInformation);
-    return (true);
+	{
+		std::cout << "I get here What" << std::endl;
+		conf->insertToSdToClient(std::make_pair(sd, Clt));
+		printf("I insert the client What?!\n");
+		printf("The client[%d] is: >>%p<< What?!\n", sd, Clt);
+		fflush(stdout);
+	}
+	Req->setLocation(sd, conf);
+	Req->setResponse(new Response(Req));
+	// To see later what to return
+	return (true);
+}
+
+void	Request::setLocation(int sd, Config* conf)
+{
+	std::vector<Location*>	locations;
+	size_t					length = 0;
+	std::string				path;
+
+	locations = conf->getServersSocket(sd)->getServer(_host)->getLocations();
+	for (size_t i = 0; i < locations.size(); i++)
+	{
+		path = locations[i]->getPath();
+		if (path.size() > _uri.size()) continue ;
+		size_t	tmpLength = 0;
+		for (size_t j = 0; j < _uri.size() && path[j] == _uri[j]; j++)
+			tmpLength++;
+		if (tmpLength > length)
+		{
+			length = tmpLength;
+			_location = locations[i];
+		}
+	}
+}
+
+Location	*Request::getLocation() const
+{
+	return (_location);
 }
 
 void    Request::_printVectorOfPairs(std::vector<std::pair<std::string, std::string> >           Body)
@@ -656,4 +719,10 @@ void PrintData(std::vector<std::vector<std::string> >  RequestData)
     for (std::vector<std::vector<std::string> >::iterator iter = RequestData.begin() ; iter != RequestData.end(); iter++)
         for (std::vector<std::string>::iterator SimpleIter = iter->begin() ; SimpleIter != iter->end(); SimpleIter++)
             std::cout << "* : " << *SimpleIter << std::endl;
+}
+
+std::string/*will retrieve the content of the body*/		Request::getContent() const
+{
+	// for test only
+	return ("SIMPLE TEXT MESSAGE\n");
 }

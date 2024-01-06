@@ -16,7 +16,10 @@
 # include <signal.h>
 # include <cstring>
 # include <dirent.h>
-#include <sys/wait.h>
+# include <sys/wait.h>
+# include <algorithm>
+
+// DONT FORGET TO CHECK THE MAKEFILE!!!
 
 # define RED		"\033[0;31m"
 # define GREEN		"\033[0;32m"
@@ -28,6 +31,7 @@
 # define RESET_COLOR "\033[0m"
 
 # define BUFFER_SIZE 4096
+# define DEFAULT_ERR_DIR "error_pages/"
 
 extern int g_sigint;
 

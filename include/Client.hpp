@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:23 by mbouyahy          #+#    #+#             */
-/*   Updated: 2023/12/31 20:28:28 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2024/01/05 16:15:09 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 
 #include <ft_common.h>
 #include "Request.hpp"
-class Request;
+class	Request;
+class	Response;
 
 class   Client
 {
@@ -27,6 +28,8 @@ class   Client
 
         Request     *_clientRequest;//change this into vector of requests if needed
         bool        _isSend;
+
+		    Response	*getResponse() const;
 };
 
 void PrintMap(std::map<int, Client *> *Map);

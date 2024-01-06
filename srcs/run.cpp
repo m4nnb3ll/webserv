@@ -1,5 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   run.cpp                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/05 16:10:00 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/05 18:13:10 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Config.hpp"
 #include "Request.hpp"
+
+/*TEST*/
+template <typename K, typename V>
+void printMap(const std::map<K, V>& inputMap)
+{
+    std::cout << "Map Contents:" << std::endl;
+    typename std::map<K, V>::const_iterator it;
+    for (it = inputMap.begin(); it != inputMap.end(); ++it) {
+        std::cout << "Key: " << it->first << ", Value: " << it->second << std::endl;
+    }
+}
+/*TEST*/
 
 void Config::_readRequest(int sd)
 {
@@ -17,38 +41,40 @@ void Config::_readRequest(int sd)
 		std::cout << "reading: client[" << sd <<"] disconnected" << std::endl;
 		return;
 	}
-	_readStr += buffer;
+	std::cout << "The fist time!" << std::endl;
+	// printMap(_sdToClient);
+	HandleRequest(buffer, sd, this);
+	// printf("The client[%d] is >>%p<< wtf?!\n", sd, _sdToClient[sd]);
 }
 
-// void Config::_sendResponse(int sd, std::map<int, Client *>  ClientsInformation)
-// {
-// 	(void)ClientsInformation;
-// 	std::ostringstream	http_response;
+void Config::_sendResponse(int sd)
+{
+	Client								*client;
+	std::map<int, Client *>::iterator   iter;
+	
+	iter = _sdToClient.find(sd);
+	if (iter == _sdToClient.end()) return ;
 
-// 	http_response << "HTTP/1.1 200 OK\r\n";
-// 	http_response << "Content-Type: image/jpeg\r\n";
-// 	std::ifstream file("assets/test_image.jpg"); // Replace with your file path
-//     std::stringstream buffer;
-//     buffer << file.rdbuf();
-//     std::string content = buffer.str();
-// 	// std::string	content(fileContent);
-// 	http_response << "Content-Length: " << content.size();
-// 	http_response << "\r\n\r\n" << content;
+	client = _sdToClient[sd];
+	if (client->getResponse()->isFinished())
+	{
+		std::string	content;
 
-// 	int ret = send(sd, http_response.str().c_str(), http_response.str().size(), 0);
-// 	if (ret == -1) {
-// 		_rmPollfd(sd);
-// 		std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
-// 		return;
-// 	}
-// }
+		content = client->getResponse()->getContent();
+		int ret = send(sd, content.c_str(), content.size(), 0);
+		if (ret == -1) {
+			_rmPollfd(sd);
+			std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
+			return;
+		}
+	}
+}
 
 void Config::run()
 {
 	Printers::print_serversSockets(_portToServersSocket);
 
 	ServersSocket* 				sS;
-	std::map<int, Client *>		ClientsInformation;
 
 	while (!g_sigint)
 	{
@@ -77,15 +103,11 @@ void Config::run()
 					_addPollfd(client_fd, POLLIN | POLLOUT);
 				}
 				else // read request from client
-				{
 					_readRequest(sd);
-					if (HandleRequest(_readStr, sd, &ClientsInformation))
-						_readStr = "";
-				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
 			{
-				_sendResponse(sd, ClientsInformation);
+				_sendResponse(sd);
 			}
 		}
 	}
