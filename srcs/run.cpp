@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   run.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:00 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/05 18:13:10 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/06 22:56:54 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,10 @@ void Config::_readRequest(int sd)
 		return;
 	}
 	std::cout << "The fist time!" << std::endl;
+
 	// printMap(_sdToClient);
-	HandleRequest(buffer, sd, this);
+	_readStr += buffer;//Temp
+	// HandleRequest(buffer, sd, this);
 	// printf("The client[%d] is >>%p<< wtf?!\n", sd, _sdToClient[sd]);
 }
 
@@ -103,7 +105,11 @@ void Config::run()
 					_addPollfd(client_fd, POLLIN | POLLOUT);
 				}
 				else // read request from client
+				{
 					_readRequest(sd);
+					if (HandleRequest(_readStr, sd, this))//Temp
+						_readStr = "";
+				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
 			{

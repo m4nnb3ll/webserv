@@ -1,4 +1,3 @@
-
 #include "Response.hpp"
 
 Response::Response(Request* request)
@@ -24,7 +23,8 @@ std::string	Response::getContent() const
 
 void	Response::_handleGet()
 {
-	if (_isFinished) return ;
+	if (_isFinished)
+		return ;
 	if (_resourceType == RT_FILE)
 		_returnFile(_resource);
 	else
@@ -59,6 +59,7 @@ void	Response::_handleDelete()
 			_tryDeleteDir();
 	}
 }
+
 
 std::string	Response::_getStatusCodeMsg()
 {
@@ -210,7 +211,7 @@ void	Response::_checkResource()
 	std::string resourcePath;
 
 	if (_isFinished) return ; // will check this later
-	_resource = _request->getLocation()->getRootPath() + _request->_getUri();
+	_resource = _request->getLocation()->getRootPath() + _request->getUri();
 	if (stat(_resource.c_str(), &fileStat) != 0)
 		_finishWithCode(STATUS_NOT_FOUND);
 	else if (S_ISDIR(fileStat.st_mode))
@@ -295,7 +296,7 @@ void	Response::_checkCgi()
 
 void	Response::_checkDirURI()
 {
-	std::string	uri = _request->_getUri();
+	std::string	uri = _request->getUri();
 
 	if (uri[uri.size() - 1] != '/')
 		_request->getMethod() == "DELETE"
