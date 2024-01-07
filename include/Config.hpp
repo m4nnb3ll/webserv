@@ -23,13 +23,14 @@ public :
 	// SETTERS
 	void						insertToSdToClient(std::pair<int, Client*>);
 
-
 private:
 	std::ifstream							_configFile;
 	std::map<std::string, ServersSocket*>	_portToServersSocket;
 	std::map<int, ServersSocket*>			_sdToServersSocket;//sd: socket descriptor
 	std::map<int, Client*>					_sdToClient;
 	std::vector<struct pollfd>				_pollFds;
+
+	std::string 							_readStr;
 
 	// METHODS
 	void			_openConfig(const std::string &);

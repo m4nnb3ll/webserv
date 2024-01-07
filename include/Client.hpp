@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:23 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/05 16:15:09 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/06 23:05:16 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,12 @@ class   Client
         Client(const Client &other);
         Client &operator=(const Client &other);
 
-        Request     *_clientRequest;//change this into vector of requests if needed
-        bool        _isSend;
 		Response	*getResponse() const;
+
+        Request     *_clientRequest;
+        bool        _isSend;
 };
 
-void PrintMap(std::map<int, Client *> *Map);
+void PrintMap(std::map<int, Client *> Map);//For Testing Only
 
 #endif
