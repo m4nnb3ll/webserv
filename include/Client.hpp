@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:23 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/06 23:05:16 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2024/01/07 21:47:53 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#pragma once
 
 #include <ft_common.h>
 #include "Request.hpp"
@@ -21,17 +20,19 @@ class	Response;
 class   Client
 {
     public:
-        Client();
+        Client(std::string);
         ~Client();
         Client(const Client &other);
         Client &operator=(const Client &other);
 
+		Request		*getRequest() const;
 		Response	*getResponse() const;
+		void		deleteRequest();
+		void		createRequest(std::string);
+		std::string	createResponse();
 
-        Request     *_clientRequest;
-        bool        _isSend;
+        Request		*_request;
+        bool		_isSend;
 };
 
 void PrintMap(std::map<int, Client *> Map);//For Testing Only
-
-#endif

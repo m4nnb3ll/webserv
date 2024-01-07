@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:04 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/05 16:20:49 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/07 16:48:18 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,4 +79,7 @@ class Response
 		void		_uploadFile();
 		void		_deleteFile();
 		void		_tryDeleteDir();
+		std::string	_strToLower(const std::string& input);
+		std::string	_getMimeType(const std::string& filename);
+
 };

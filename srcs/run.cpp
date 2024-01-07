@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   run.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:00 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/06 22:56:54 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2024/01/07 21:53:11 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,10 +43,16 @@ void Config::_readRequest(int sd)
 	}
 	std::cout << "The fist time!" << std::endl;
 
-	// printMap(_sdToClient);
-	_readStr += buffer;//Temp
-	// HandleRequest(buffer, sd, this);
-	// printf("The client[%d] is >>%p<< wtf?!\n", sd, _sdToClient[sd]);
+	// make sure the delete the client after the poll quit
+	if (_sdToClient[sd])
+	{
+		_sdToClient[sd]->getRequest()
+			?	_sdToClient[sd]->getRequest()->appendStr(buffer)
+			:	_sdToClient[sd]->createRequest(buffer);
+	}
+	else
+		_sdToClient[sd] = new Client(buffer);
+	_sdToClient[sd]->getRequest()->handleRequest(sd, this);
 }
 
 void Config::_sendResponse(int sd)
@@ -58,17 +64,17 @@ void Config::_sendResponse(int sd)
 	if (iter == _sdToClient.end()) return ;
 
 	client = _sdToClient[sd];
-	if (client->getResponse()->isFinished())
+	if (client->getRequest() && client->getRequest()->isFinished)
 	{
-		std::string	content;
-
-		content = client->getResponse()->getContent();
+		std::string	content = client->createResponse();
 		int ret = send(sd, content.c_str(), content.size(), 0);
 		if (ret == -1) {
 			_rmPollfd(sd);
+			_sdToClient.erase(sd);
 			std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
-			return;
+			return ;
 		}
+		client->deleteRequest();
 	}
 }
 
@@ -105,11 +111,7 @@ void Config::run()
 					_addPollfd(client_fd, POLLIN | POLLOUT);
 				}
 				else // read request from client
-				{
 					_readRequest(sd);
-					if (HandleRequest(_readStr, sd, this))//Temp
-						_readStr = "";
-				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
 			{
