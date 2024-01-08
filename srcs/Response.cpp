@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.cpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/07 22:31:55 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/07 22:31:55 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Response.hpp"
 
 Response::Response(Request* request)
@@ -26,7 +38,10 @@ void	Response::_handleGet()
 	if (_isFinished)
 		return ;
 	if (_resourceType == RT_FILE)
+	{
+		std::cout << "the request file is: " << _resource << std::endl;
 		_returnFile(_resource);
+	}
 	else
 	{
 		_checkDirURI();
@@ -124,8 +139,7 @@ void	Response::_errorCheck()
 		// Print HTTP response headers
 		finalStream << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
 		finalStream << "Content-Length: " << fileContent.str().length() << "\r\n";
-		// The following will be changed later to reflect the actual content-type
-		finalStream << "Content-Type: text/html\r\n"; // Change content type as needed
+		finalStream << "Content-Type: text/html\r\n";
 		finalStream << "\r\n"; // Empty line to separate headers from content
 		// Print file content
 		finalStream << fileContent.str();
@@ -180,7 +194,10 @@ void	Response::_checkLocation()
 	if (_isFinished) return ;
 	location = _request->getLocation();
 	if (!location)
+	{
+		std::cout << "couldn't find the location" << std::endl;
 		_finishWithCode(STATUS_NOT_FOUND);
+	}
 	else if (location -> getRedirect())
 		_redirect();
 	else
@@ -213,7 +230,10 @@ void	Response::_checkResource()
 	if (_isFinished) return ; // will check this later
 	_resource = _request->getLocation()->getRootPath() + _request->getUri();
 	if (stat(_resource.c_str(), &fileStat) != 0)
+	{
+		std::cout << "couldn't find the resource" << " " << _resource << std::endl;
 		_finishWithCode(STATUS_NOT_FOUND);
+	}
 	else if (S_ISDIR(fileStat.st_mode))
 		_resourceType = RT_DIR;
 	else
@@ -304,6 +324,27 @@ void	Response::_checkDirURI()
 			:	_finishWithCode(STATUS_MOVED);
 }
 
+std::string	Response::_strToLower(const std::string& input) {
+    std::string result = input;
+
+    for (size_t i = 0; i < result.length(); ++i)
+        result[i] = static_cast<char>(std::tolower(result[i]));
+    return result;
+}
+
+std::string	Response::_getMimeType(const std::string& filename) 
+{
+    // Extract file extension
+    size_t	dotIndex = filename.find_last_of(".");
+    if (dotIndex == std::string::npos || dotIndex == filename.length() - 1)
+        return "application/octet-stream";
+
+    std::string extension = _strToLower(filename.substr(dotIndex));
+    // Look up the extension in the global map
+    std::map<std::string, std::string>::iterator it = g_mimeTypes.find(extension);
+    return (it != g_mimeTypes.end() ? it->second : "application/octet-stream");
+}
+
 void	Response::_returnFile(std::string filename)
 {
 	std::ifstream file(filename.c_str(), std::ios::binary);
@@ -316,8 +357,7 @@ void	Response::_returnFile(std::string filename)
 		// Print HTTP response headers
 		finalStream << "HTTP/1.1 200 OK\r\n";
 		finalStream << "Content-Length: " << fileContent.str().length() << "\r\n";
-		// The following will be changed later to reflect the actual content-type
-		finalStream << "Content-Type: application/octet-stream\r\n"; // Change content type as needed
+		finalStream << "Content-Type: "<< _getMimeType(filename) << "\r\n";
 		finalStream << "\r\n"; // Empty line to separate headers from content
 		// Print file content
 		finalStream << fileContent.str();

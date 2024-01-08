@@ -1,0 +1,12 @@
+.html,text/html
+.css,text/css
+.js,application/javascript
+.jpg,image/jpeg
+.png,image/png
+.gif,image/gif
+.pdf,application/pdf
+.txt,text/plain
+.xml,application/xml
+.json,application/json
+.mp4,video/mp4
+.mp3,audio/mpeg

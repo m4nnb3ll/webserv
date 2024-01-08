@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_common.h                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/07 22:31:06 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/07 22:31:06 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef FT_COMMON_H
 # define FT_COMMON_H
 
@@ -18,6 +30,7 @@
 # include <dirent.h>
 # include <sys/wait.h>
 # include <algorithm>
+# include <set>
 
 // DONT FORGET TO CHECK THE MAKEFILE!!!
 
@@ -32,6 +45,7 @@
 
 # define BUFFER_SIZE 4096
 # define DEFAULT_ERR_DIR "error_pages/"
+# define MIMETYPES_FILE_PATH "assets/mimeTypes.csv"
 
 extern int g_sigint;
 

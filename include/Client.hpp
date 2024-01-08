@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#pragma once
 
 #include <ft_common.h>
 #include "Request.hpp"
@@ -21,17 +20,19 @@ class	Response;
 class   Client
 {
     public:
-        Client();
+        Client(std::string);
         ~Client();
         Client(const Client &other);
         Client &operator=(const Client &other);
 
+		Request		*getRequest() const;
 		Response	*getResponse() const;
+		void		deleteRequest();
+		void		createRequest(std::string);
+		std::string	createResponse();
 
-        Request     *_clientRequest;
-        bool        _isSend;
+        Request		*_request;
+        bool		_isSend;
 };
 
 void PrintMap(std::map<int, Client *> Map);//For Testing Only
-
-#endif

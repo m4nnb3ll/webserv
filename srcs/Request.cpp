@@ -12,7 +12,9 @@
 
 #include "Request.hpp"
 
-Request::Request() : _location(NULL) {}
+Request::Request(std::string buff)
+	:	_reqStr(buff), _location(NULL)
+{}
 
 Request::~Request(){}
 
@@ -23,6 +25,8 @@ Request &Request::operator=(const Request &other)
     if (this != &other){}
     return (*this);
 }
+
+void	Request::appendStr(std::string buff) { _reqStr += buff; }
 
 /*
 the role of FormOne Function :
@@ -282,18 +286,15 @@ the role of traitRequest Function :
     5- call SearchErrors Function
     6- return Req
 */
-Request *traitRequest(t_request ReqParse)
+
+void	Request::_traitRequest(t_request ReqParse)
 {
-    Request *Req;
-    
-    Req = new Request();
-    Req->CpDataFromStruct(ReqParse);
-    if (Req->getContentType() == "multipart/form-data")
-        FormTwo(Req);
-    else if (Req->getContentType() == "application/x-www-form-urlencoded")
-        FormOne(Req);
-    Req->SearchErrors();
-    return (Req);
+    this->CpDataFromStruct(ReqParse);
+    if (this->getContentType() == "multipart/form-data")
+        FormTwo(this);
+    else if (this->getContentType() == "application/x-www-form-urlencoded")
+        FormOne(this);
+    this->SearchErrors();
 }
 
 /*
@@ -701,26 +702,18 @@ the role of HandleRequest Function :
     2- if the request is completed => create a new Client and add it to the map
     3- if the request is not completed => return false
 */
-bool    HandleRequest(std::string _readStr, int sd, Config* conf)
+
+// MAKE SURE TO MAKE THIS PART OF THE Request class @mourad
+void	Request::handleRequest(int sd, Config* conf)
 {
-    std::map<int, Client*>  sdToClient;
-	Request				    *Req;
-    Client                  *Clt;
     t_request               ReqParse;
 
-    ReqParse = isCompletedRequest(_readStr);//rename this variable
-    if (!ReqParse.isFinished)
-        return (false);
-    Req = traitRequest(ReqParse);
-    Clt = new Client();
-    Clt->_clientRequest = Req;
-    sdToClient = conf->getSdToClient();
-    conf->insertToSdToClient(std::make_pair(sd, Clt));
-    Req->setLocation(sd, conf);
-	Req->setResponse(new Response(Req));
+    ReqParse = isCompletedRequest(_reqStr);//rename this variable
+    if (!ReqParse.isFinished) return ;
+    _traitRequest(ReqParse);
+    this->setLocation(sd, conf);
 	// PrintMap(conf->getSdToClient());
     // To see later what to return
-    return (true);
 }
 
 void	Request::setLocation(int sd, Config* conf)

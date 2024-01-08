@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ServersSocket.cpp                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/07 22:32:03 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/07 22:32:03 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ServersSocket.hpp"
 
 ServersSocket::ServersSocket(Server *s)
@@ -9,7 +21,10 @@ ServersSocket::ServersSocket(Server *s)
 ServersSocket::~ServersSocket()
 {
 	for (size_t i = 0; i < _servers.size(); i++)
-		delete _servers[i];//heap-use-after-free!
+	{
+		delete _servers[i];
+		_servers[i] = NULL;
+	}
 }
 
 void	ServersSocket::setFd(int sd)

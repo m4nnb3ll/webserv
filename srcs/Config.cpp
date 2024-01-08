@@ -1,22 +1,58 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Config.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/07 22:31:37 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/07 22:31:38 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Config.hpp"
 
+std::map<std::string, std::string>	g_mimeTypes;
+
+void	initMimeTypes()
+{
+    std::ifstream file(MIMETYPES_FILE_PATH);
+    if (!file.is_open())
+		throw(std::runtime_error("error opening the MIMETYPES file"));
+
+    std::string line;
+    while (std::getline(file, line))
+	{
+        std::istringstream linestream(line);
+        std::string extension;
+        std::string mimeType;
+		std::getline(linestream, extension, ',');
+		std::getline(linestream, mimeType);
+		g_mimeTypes[extension] = mimeType;
+    }
+    file.close();
+	std::cout << RED << "initialized mime types" << RESET_COLOR << std::endl;
+}
+
+// there is a problem with the freeing 
 Config::~Config()
 {
+	std::set<ServersSocket*>	ptrs;
 	for (std::map<int, ServersSocket*>::iterator it = _sdToServersSocket.begin();
 		it != _sdToServersSocket.end(); it++)
 	{
-		delete it->second;
 		close(it->first);
+		ptrs.insert(it->second);
 	}
+	for (std::set<ServersSocket*>::iterator it = ptrs.begin(); it != ptrs.end(); it++)
+		delete *it;
 }
 
 Config::Config(const std::string &input)
 {
 	std::string	line;
 
-	/* FOR TESTING */
-	std::cout << "The size of the map is:" << _sdToClient.size() << std::endl;
-	/* FOR TESTING */
+	initMimeTypes();
 	_openConfig(input);
 	while (std::getline(_configFile, line))
 	{
@@ -252,6 +288,7 @@ void Config::_unplugSocket(ServersSocket *sS)
 		{
 			_portToServersSocket.erase(it->first);
 			delete sS;
+			sS = NULL;
 			break ;
 		}
 	}
@@ -289,7 +326,11 @@ void	Config::_addPollfd(int sd, short events)
 
 void	Config::_rmPollfd(int sd)
 {
+	/*test*/
+	// std::cout << YELLOW << "I GET INTO THE REMOVE" << RESET_COLOR << std::endl;
+	// delete _sdToServersSocket[sd];
 	_sdToServersSocket.erase(sd);
+	/*test*/
 	// remove from pollfds
 	for (std::vector<struct pollfd>::iterator it = _pollFds.begin();
 		it != _pollFds.end(); it++)

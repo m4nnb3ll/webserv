@@ -1,9 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Config.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/07 22:31:03 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/07 22:31:03 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include <ft_common.h>
 #include "Server.hpp"
 #include "Printers.hpp"
 #include "Client.hpp"//added by mbouyahy
+
+extern std::map<std::string, std::string>	g_mimeTypes;
 
 class	Printers;
 class	ServersSocket;

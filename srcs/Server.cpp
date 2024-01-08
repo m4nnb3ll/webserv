@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/07 22:32:00 by abelayad          #+#    #+#             */
+/*   Updated: 2024/01/07 22:32:00 by abelayad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Server.hpp"
 
 Server::Server()
@@ -9,7 +21,10 @@ Server::~Server()
 	// delete Locations
 	for (std::vector<Location*>::iterator it = _locations.begin();
 	it != _locations.end(); it++)
+	{
 		delete *it;
+		*it = NULL;
+	}
 }
 
 void	Server::addServerName(const std::string& serverName)
