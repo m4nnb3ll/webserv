@@ -26,7 +26,10 @@ Request &Request::operator=(const Request &other)
     return (*this);
 }
 
-void	Request::appendStr(std::string buff) { _reqStr += buff; }
+void	Request::appendStr(std::string buff) {
+	_reqStr += buff;
+	// std::cout << _reqStr << std::endl;
+}
 
 /*
 the role of FormOne Function :
@@ -647,16 +650,22 @@ void    treatingBody(t_request *ReqParse)
     ReqParse->BodyInStr = ReqParse->data.substr(begin + 4, ReqParse->data.size());
     if (ReqParse->contentLength != 0)
     {
+		// std::cout << "getBodySize(ReqParse) == ReqParse->contentLength\n";
+		// printf("[%zu] == [%zu]: >>%d<<\n", getBodySize(ReqParse), ReqParse->contentLength, getBodySize(ReqParse) == ReqParse->contentLength);
         if (getBodySize(ReqParse) == ReqParse->contentLength)
-            ReqParse->hasBody = true;
+        {
+			ReqParse->hasBody = true;
+		}
     }
     else if (ReqParse->contentLength == 0 && ReqParse->transferEncoding == "chunked")
     {
+		printf("I GET HERE2\n");
         if (isTerminatedChunks(ReqParse))
             ReqParse->hasBody = true;
     }
     else if (ReqParse->contentLength == 0 && ReqParse->transferEncoding == "")
     {
+		printf("I GET HERE3\n");
         ReqParse->statusCode = 411;//check it later
         ReqParse->reasonPhrase = "Length Required";
         ReqParse->isFinished = true;
@@ -708,6 +717,7 @@ void	Request::handleRequest(int sd, Config* conf)
 
     ReqParse = isCompletedRequest(_reqStr);//rename this variable
     if (!ReqParse.isFinished) return ;
+	// std::cout << "I GET HERE" << std::endl;
     _traitRequest(ReqParse);
     this->setLocation(sd, conf);
 	// PrintMap(conf->getSdToClient());
