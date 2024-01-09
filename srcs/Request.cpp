@@ -647,6 +647,8 @@ void    treatingBody(t_request *ReqParse)
     ReqParse->BodyInStr = ReqParse->data.substr(begin + 4, ReqParse->data.size());
     if (ReqParse->contentLength != 0)
     {
+		// std::cout << "getBodySize(ReqParse) == ReqParse->contentLength\n";
+		// printf("[%zu] == [%zu]: >>%d<<\n", getBodySize(ReqParse), ReqParse->contentLength, getBodySize(ReqParse) == ReqParse->contentLength);
         if (getBodySize(ReqParse) == ReqParse->contentLength)
 			ReqParse->hasBody = true;
 		// else if (getBodySize(ReqParse) > "Client max body size in the config file")
@@ -658,6 +660,7 @@ void    treatingBody(t_request *ReqParse)
     }
     else if (ReqParse->contentLength == 0 && ReqParse->transferEncoding == "chunked")
     {
+		printf("I GET HERE2\n");
         if (isTerminatedChunks(ReqParse))
             ReqParse->hasBody = true;
     }
@@ -720,6 +723,7 @@ void	Request::handleRequest(int sd, Config* conf)
 
     ReqParse = isCompletedRequest(_reqStr);
     if (!ReqParse.isFinished) return ;
+	// std::cout << "I GET HERE" << std::endl;
     _traitRequest(ReqParse);
     this->setLocation(sd, conf);
 	// IF (THIS->ISFINISHED && THIS->STATUSCODE > -1) => YOU DON'T NEED TO DO ANYTHING , JUST RETURN ERROR PAGE!!! 
