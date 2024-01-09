@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*												                                                    */
-/*												           :::      ::::::::                        */
+/*												                              */
+/*												           :::      ::::::::  */
 /*   Request.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*												       +:+ +:+         +:+    */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*												   +#+#+#+#+#+   +#+          */
 /*   Created: 2023/12/13 14:17:44 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/06 22:52:11 by mbouyahy         ###   ########.fr       */
-/*                                                                            */
+/*   Updated: 2024/01/07 21:18:06 by abelayad         ###   ########.fr       */
+/*												                              */
 /* ************************************************************************** */
 
 #ifndef REQUEST_HPP
@@ -59,13 +59,13 @@ typedef struct s_request
     std::string                                         		host;
     std::string                                         		uri;
     std::string                                         		BoundaryEnd;
-    size_t                                              		contentLength;
-    size_t                                              		BodySize;
-    bool                                                		isFinished;
-    bool                                                		hasHeader;
-    bool                                                		hasBody;
-    bool                                                		Status;
-    int                                                 		statusCode;
+    size_t												 		contentLength;
+    size_t												 		BodySize;
+    bool												   		isFinished;
+    bool												   		hasHeader;
+    bool												   		hasBody;
+    bool												   		Status;
+    int												    		statusCode;
 } t_request;
 
 class Request
@@ -75,7 +75,7 @@ class Request
         ~Request();
         Request(const Request &other);
         Request &operator=(const Request &other);
-  
+
 		void													handleRequest(int, Config*);
 		//Getters
         std::vector<std::pair<std::string, std::string> >       getQueryStringParam() const;

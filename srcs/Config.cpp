@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:37 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 22:31:38 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/08 23:09:41 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -381,7 +381,7 @@ std::map<int, Client*>	Config::getSdToClient() const
 
 void	Config::insertToSdToClient(std::pair<int, Client*> pair)
 {
-	std::cout << RED << "INSERTION!!!" << RESET_COLOR << std::endl;
+	// std::cout << RED << "INSERTION!!!" << RESET_COLOR << std::endl;
 	_sdToClient.insert(pair);
 }
 

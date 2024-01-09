@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:03 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 22:31:03 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/08 22:32:43 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,6 @@ private:
 	std::map<int, ServersSocket*>			_sdToServersSocket;//sd: socket descriptor
 	std::map<int, Client*>					_sdToClient;
 	std::vector<struct pollfd>				_pollFds;
-
-	std::string 							_readStr;
 
 	// METHODS
 	void			_openConfig(const std::string &);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:04 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 16:48:18 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/09 12:20:44 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,11 @@ enum e_status_code
 	STATUS_NOT_ALLOWED = 405,
 	STATUS_CONFLICT = 409,
 	STATUS_INTERNAL_ERR = 500,
-	STATUS_NOT_IMPLEMENTED = 501
+	STATUS_NOT_IMPLEMENTED = 501,
+	STATUS_URI_TOO_LONG = 414,
+	STATUS_BAD_REQUEST = 400,
+	STATUS_LENGTH_REQUIRED = 411,
+	STATUS_REQUEST_ENTITY_TOO_LARGE = 413
 };
 
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   run.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:00 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/06 22:56:54 by mbouyahy         ###   ########.fr       */
+/*   Updated: 2024/01/08 23:15:49 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,28 +30,45 @@ void Config::_readRequest(int sd)
 
 	// The server-name WILL be checked after reading the request
 
-    char	buffer[BUFFER_SIZE];
-	int		ret;
+    char		buffer[BUFFER_SIZE];
+	std::string	strToPass;
+	int			ret;
 
     memset(buffer, 0, BUFFER_SIZE);
-	ret = recv(sd, buffer, BUFFER_SIZE - 1, 0);
+	ret = recv(sd, buffer, BUFFER_SIZE, 0);
 
 	if (!ret || ret == -1) {
 		_rmPollfd(sd);
 		std::cout << "reading: client[" << sd <<"] disconnected" << std::endl;
 		return;
 	}
-	std::cout << "The fist time!" << std::endl;
+	// std::cout << "The fist time!" << std::endl;
+	// static size_t i = 0;
+	// std::cout << i++ << std::endl;
 
 	// make sure the delete the client after the poll quit
+	// the following is to fix the problem of the NULL terminator presence, instead of just doing +=
+	// static std::string test;
+
+	strToPass="";
+	strToPass.append(buffer, ret);
+	// test += strToPass;
+	// size_t	pos;
+	// if ((pos = test.find("1337")) != std::string::npos)
+	// {
+	// 	std::cout << RED << "FINISHED!!!" << RESET_COLOR << std::endl;
+	// 	std::cout << test.substr(pos) << std::endl;
+	// 	// exit(111);
+	// }
+	// uncomment the following LATER
 	if (_sdToClient[sd])
 	{
 		_sdToClient[sd]->getRequest()
-			?	_sdToClient[sd]->getRequest()->appendStr(buffer)
-			:	_sdToClient[sd]->createRequest(buffer);
+			?	_sdToClient[sd]->getRequest()->appendStr(strToPass)
+			:	_sdToClient[sd]->createRequest(strToPass);
 	}
 	else
-		_sdToClient[sd] = new Client(buffer);
+		_sdToClient[sd] = new Client(strToPass);
 	_sdToClient[sd]->getRequest()->handleRequest(sd, this);
 }
 
@@ -66,6 +83,7 @@ void Config::_sendResponse(int sd)
 	client = _sdToClient[sd];
 	if (client->getRequest() && client->getRequest()->isFinished)
 	{
+		// std::cout << "The request is finished\n" << std::endl;
 		std::string	content = client->createResponse();
 		int ret = send(sd, content.c_str(), content.size(), 0);
 		if (ret == -1) {
@@ -111,11 +129,7 @@ void Config::run()
 					_addPollfd(client_fd, POLLIN | POLLOUT);
 				}
 				else // read request from client
-				{
 					_readRequest(sd);
-					if (HandleRequest(_readStr, sd, this))//Temp
-						_readStr = "";
-				}
 			}
 			else if (_pollFds[i].revents & POLLOUT) // send response to the client
 			{

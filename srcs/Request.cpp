@@ -26,7 +26,10 @@ Request &Request::operator=(const Request &other)
     return (*this);
 }
 
-void	Request::appendStr(std::string buff) { _reqStr += buff; }
+void	Request::appendStr(std::string buff) {
+	_reqStr += buff;
+	// std::cout << _reqStr << std::endl;
+}
 
 /*
 the role of FormOne Function :
@@ -119,25 +122,25 @@ std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std:
     begin = (*iter).find(" filename=");
     if (begin != std::string::npos)
     {
-        for (size_t i = begin + 11; i < (*iter).size(); i++)
+        for (size_t i = begin + 11; i < (*iter).size() - 1; i++)
         {
             if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
                 break ;
             key += (*iter)[i];
         }
-        if (iter + 2 != data.end())
+        if (iter + 3 != data.end())
         {
-            iter+=2;
+            iter+=3;
             for (; iter != data.end(); iter++)
             {
-                if (*iter == "\n" || *iter == "\r")
-                    continue;
+                // if (*iter == "\n" || *iter == "\r")
+                //     continue;
                 if (*iter == Req->boundaryEnd || *iter == Req->boundaryBegin)
                 {
                     Req->isFinished = true;
                     break ;
                 }
-                    value += *iter + '\n';
+				value += *iter;
             }
         }
     }
@@ -172,16 +175,13 @@ void FormTwo(Request *Req)
             }
             else
             {
-                size_t begin = (*iter).find("=");//change from "=" to " name="
+                size_t begin = (*iter).find("=");
                 for (size_t i = begin + 2; i < (*iter).size() && begin <= (*iter).size(); i++)
                 {
                     if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
                         break ;
                     key += (*iter)[i];
                 }
-                //
-                // if (begin != std::string::npos)
-                //     key = (*iter).substr(begin + 7, (*iter).size() - begin - 2);//" name=" => 7
                 if (iter + 2 != data.begin())
                 {
                     iter += 2;
@@ -234,15 +234,15 @@ void Request::SearchErrors()//Temp Function
 {
     //check this later
     if (_method == "POST" && _contentType.empty() && _transferEncoding.empty())
-        _statusCode = 400;//Bad Request
+        _statusCode = STATUS_NOT_IMPLEMENTED;
     if (_method != "POST" && _method != "GET" && _method != "DELETE")
-        _statusCode = 405;// _method Not Allowed | check it later
-    if (_method == "POST" && bodySize == _contentLength && _statusCode == -1)
-        isFinished = true;
-    else if (_method == "GET" && _statusCode == -1)
-        isFinished = true;
-    else if (_method == "DELETE" && _statusCode == -1)
-        isFinished = true;
+        _statusCode = STATUS_NOT_ALLOWED;
+    // if (_method == "POST" && bodySize == _contentLength && _statusCode == -1)
+    //     isFinished = true;
+    // else if (_method == "GET" && _statusCode == -1)
+    //     isFinished = true;
+    // else if (_method == "DELETE" && _statusCode == -1)
+    //     isFinished = true;
 }
 
 /*
@@ -286,7 +286,6 @@ the role of traitRequest Function :
     5- call SearchErrors Function
     6- return Req
 */
-
 void	Request::_traitRequest(t_request ReqParse)
 {
     this->CpDataFromStruct(ReqParse);
@@ -512,7 +511,7 @@ void    isInvalidUri(t_request *ReqParse)
 {
     if (ReqParse->uri.size() > 2048)//I'm Not Sure About That
     {
-        ReqParse->statusCode = 414;
+        ReqParse->statusCode = STATUS_URI_TOO_LONG;
         ReqParse->reasonPhrase = "URI Too Long";
         ReqParse->isFinished = true;
     }
@@ -520,7 +519,7 @@ void    isInvalidUri(t_request *ReqParse)
     {
         if (!isalpha(ReqParse->uri[i]) && !isdigit(ReqParse->uri[i]) && !isSpecialCharacter(ReqParse->uri[i]))
         {
-            ReqParse->statusCode = 400;//=> Bad Request | Uploading a file that is too large | Invalid Cookies | DNS cache error
+            ReqParse->statusCode = STATUS_BAD_REQUEST;//=> Bad Request | Uploading a file that is too large | Invalid Cookies | DNS cache error
             ReqParse->reasonPhrase = "Bad Request";
             ReqParse->isFinished = true;
         }
@@ -649,7 +648,13 @@ void    treatingBody(t_request *ReqParse)
     if (ReqParse->contentLength != 0)
     {
         if (getBodySize(ReqParse) == ReqParse->contentLength)
-            ReqParse->hasBody = true;
+			ReqParse->hasBody = true;
+		// else if (getBodySize(ReqParse) > "Client max body size in the config file")
+		{
+			// ReqParse->statusCode = STATUS_REQUEST_ENTITY_TOO_LARGE;
+			// ReqParse->reasonPhrase = "Bad Request";
+			// ReqParse->isFinished = true;
+		}
     }
     else if (ReqParse->contentLength == 0 && ReqParse->transferEncoding == "chunked")
     {
@@ -658,10 +663,16 @@ void    treatingBody(t_request *ReqParse)
     }
     else if (ReqParse->contentLength == 0 && ReqParse->transferEncoding == "")
     {
-        ReqParse->statusCode = 411;//check it later
+        ReqParse->statusCode = STATUS_LENGTH_REQUIRED;
         ReqParse->reasonPhrase = "Length Required";
         ReqParse->isFinished = true;
     }
+	else if (ReqParse->transferEncoding != "" && ReqParse->transferEncoding != "chunked")
+	{
+		ReqParse->statusCode = STATUS_NOT_IMPLEMENTED;
+		ReqParse->reasonPhrase = "Not Implemented";
+		ReqParse->isFinished = true;
+	}
 }
 
 /*
@@ -702,18 +713,17 @@ the role of HandleRequest Function :
     2- if the request is completed => create a new Client and add it to the map
     3- if the request is not completed => return false
 */
-
 // MAKE SURE TO MAKE THIS PART OF THE Request class @mourad
 void	Request::handleRequest(int sd, Config* conf)
 {
     t_request               ReqParse;
 
-    ReqParse = isCompletedRequest(_reqStr);//rename this variable
+    ReqParse = isCompletedRequest(_reqStr);
     if (!ReqParse.isFinished) return ;
     _traitRequest(ReqParse);
     this->setLocation(sd, conf);
+	// IF (THIS->ISFINISHED && THIS->STATUSCODE > -1) => YOU DON'T NEED TO DO ANYTHING , JUST RETURN ERROR PAGE!!! 
 	// PrintMap(conf->getSdToClient());
-    // To see later what to return
 }
 
 void	Request::setLocation(int sd, Config* conf)
@@ -789,14 +799,15 @@ void                                                Request::setReasonPhrase(std
 void                                                Request::setHost(std::string value){ _host = value; }
 void												Request::setResponse(Response *response) { _response = response; }
 
-//Test Functions
+
+//For Testing Only
 void    Request::printVectorOfPairs(std::vector<std::pair<std::string, std::string> >           Body)
 {
     std::vector<std::pair<std::string, std::string> >::iterator           iter;
     for (iter = Body.begin(); iter != Body.end(); iter++)
         std::cout << "Key : " << iter->first << " | Value : " << iter->second << std::endl;
 }
-
+// For Testing Only
 void PrintData(std::vector<std::vector<std::string> >  RequestData)
 {
     for (std::vector<std::vector<std::string> >::iterator iter = RequestData.begin() ; iter != RequestData.end(); iter++)

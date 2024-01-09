@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:55 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 22:31:55 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/09 12:23:15 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	Response::_handleGet()
 		return ;
 	if (_resourceType == RT_FILE)
 	{
-		std::cout << "the request file is: " << _resource << std::endl;
+		// std::cout << "the request file is: " << _resource << std::endl;
 		_returnFile(_resource);
 	}
 	else
@@ -164,10 +164,8 @@ void	Response::_finishWithCode(enum e_status_code code)
 		std::ostringstream	oSS;
 		oSS << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
 		if (_statusCode == STATUS_MOVED)
-		{
 			oSS << "Location: " << _resource + "/" << "\r\n";
-			oSS << "Content-Length: 0\r\n";
-		}
+		oSS << "Content-Length: 0\r\n";
 		oSS << "\r\n";
 		_content = oSS.str();
 	}
@@ -408,11 +406,18 @@ void	Response::_checkAutoIndex()
 
 void	Response::_uploadFile()
 {
-	std::ofstream file("filename");
+	if (!_request->files.size())
+	{
+		_finishWithCode(STATUS_INTERNAL_ERR);
+		return ;
+	}
+
+	std::string	filename = "uploads/" + _request->files[0].first;
+	std::ofstream file(filename);
 
 	if (file.is_open())
 	{
-		file << _request->getContent();
+		file << _request->files[0].second;
 		file.close();
 		_finishWithCode(STATUS_CREATED);
 	}
