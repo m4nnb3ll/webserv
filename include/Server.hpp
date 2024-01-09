@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:21 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 22:31:21 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/09 13:45:24 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class	Server
 		void									addServerName(const std::string& serverName);
 		void									setErrorPages(int errCode, const std::string& errorPage);
 		void									setMaxBodySize(size_t maxBodySize);
+		size_t									getMaxBodySize() const;
 		void									addLocation(Location *location);
 		const std::vector<std::string>&			getServerNames() const;
 		const std::vector<Location*>&			getLocations() const;

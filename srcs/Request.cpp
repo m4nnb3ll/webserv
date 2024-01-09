@@ -122,25 +122,25 @@ std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std:
     begin = (*iter).find(" filename=");
     if (begin != std::string::npos)
     {
-        for (size_t i = begin + 11; i < (*iter).size(); i++)
+        for (size_t i = begin + 11; i < (*iter).size() - 1; i++)
         {
             if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
                 break ;
             key += (*iter)[i];
         }
-        if (iter + 2 != data.end())
+        if (iter + 3 != data.end())
         {
-            iter+=2;
+            iter+=3;
             for (; iter != data.end(); iter++)
             {
-                if (*iter == "\n" || *iter == "\r")
-                    continue;
+                // if (*iter == "\n" || *iter == "\r")
+                //     continue;
                 if (*iter == Req->boundaryEnd || *iter == Req->boundaryBegin)
                 {
                     Req->isFinished = true;
                     break ;
                 }
-                    value += *iter + '\n';
+				value += *iter;
             }
         }
     }
@@ -169,22 +169,20 @@ void FormTwo(Request *Req)
             iter++;
             if (isFile(iter, data))
             {
+				std::cout << "FILE" << std::endl; 
                 iter = HandleFiles(Req, iter, data);//handle files
                 if (*iter == Req->boundaryBegin)
                     iter--;
             }
             else
             {
-                size_t begin = (*iter).find("=");//change from "=" to " name="
+                size_t begin = (*iter).find("=");
                 for (size_t i = begin + 2; i < (*iter).size() && begin <= (*iter).size(); i++)
                 {
                     if (i + 1 < (*iter).size() && ((*iter)[i + 1] == '\r' || (*iter)[i + 1] == '\n'))
                         break ;
                     key += (*iter)[i];
                 }
-                //
-                // if (begin != std::string::npos)
-                //     key = (*iter).substr(begin + 7, (*iter).size() - begin - 2);//" name=" => 7
                 if (iter + 2 != data.begin())
                 {
                     iter += 2;
@@ -237,15 +235,11 @@ void Request::SearchErrors()//Temp Function
 {
     //check this later
     if (_method == "POST" && _contentType.empty() && _transferEncoding.empty())
-        _statusCode = 400;//Bad Request
+        _statusCode = STATUS_NOT_IMPLEMENTED;
     if (_method != "POST" && _method != "GET" && _method != "DELETE")
-        _statusCode = 405;// _method Not Allowed | check it later
-    if (_method == "POST" && bodySize == _contentLength && _statusCode == -1)
-        isFinished = true;
-    else if (_method == "GET" && _statusCode == -1)
-        isFinished = true;
-    else if (_method == "DELETE" && _statusCode == -1)
-        isFinished = true;
+        _statusCode = STATUS_NOT_ALLOWED;
+	else if (this->body.size() > _location->getServer()->getMaxBodySize())
+		_statusCode = STATUS_REQUEST_ENTITY_TOO_LARGE;
 }
 
 /*
@@ -296,7 +290,6 @@ void	Request::_traitRequest(t_request ReqParse)
         FormTwo(this);
     else if (this->getContentType() == "application/x-www-form-urlencoded")
         FormOne(this);
-    this->SearchErrors();
 }
 
 /*
@@ -313,7 +306,6 @@ bool    isCompletedHeader(t_request *ReqParse)
     {
         std::string str = ReqParse->data.substr(0, begin + 2);//i add 2 HERE FOR RESOLVE THE PROBLEM OF THE END OF THE HEADER!!!!
         ReqParse->HeaderInStr += str;
-        // pRequest.erase(0, begin + 4);
         return (true);
     }
     return (false);
@@ -514,17 +506,15 @@ void    isInvalidUri(t_request *ReqParse)
 {
     if (ReqParse->uri.size() > 2048)//I'm Not Sure About That
     {
-        ReqParse->statusCode = 414;
+        ReqParse->statusCode = STATUS_URI_TOO_LONG;
         ReqParse->reasonPhrase = "URI Too Long";
-        ReqParse->isFinished = true;
     }
     for (size_t i = 0; i < ReqParse->uri.size(); i++)
     {
         if (!isalpha(ReqParse->uri[i]) && !isdigit(ReqParse->uri[i]) && !isSpecialCharacter(ReqParse->uri[i]))
         {
-            ReqParse->statusCode = 400;//=> Bad Request | Uploading a file that is too large | Invalid Cookies | DNS cache error
+            ReqParse->statusCode = STATUS_BAD_REQUEST;//=> Bad Request | Uploading a file that is too large | Invalid Cookies | DNS cache error
             ReqParse->reasonPhrase = "Bad Request";
-            ReqParse->isFinished = true;
         }
     }
 }
@@ -650,26 +640,26 @@ void    treatingBody(t_request *ReqParse)
     ReqParse->BodyInStr = ReqParse->data.substr(begin + 4, ReqParse->data.size());
     if (ReqParse->contentLength != 0)
     {
-		// std::cout << "getBodySize(ReqParse) == ReqParse->contentLength\n";
-		// printf("[%zu] == [%zu]: >>%d<<\n", getBodySize(ReqParse), ReqParse->contentLength, getBodySize(ReqParse) == ReqParse->contentLength);
         if (getBodySize(ReqParse) == ReqParse->contentLength)
-        {
 			ReqParse->hasBody = true;
-		}
     }
     else if (ReqParse->contentLength == 0 && ReqParse->transferEncoding == "chunked")
     {
-		printf("I GET HERE2\n");
         if (isTerminatedChunks(ReqParse))
             ReqParse->hasBody = true;
     }
     else if (ReqParse->contentLength == 0 && ReqParse->transferEncoding == "")
     {
-		printf("I GET HERE3\n");
-        ReqParse->statusCode = 411;//check it later
+        ReqParse->statusCode = STATUS_LENGTH_REQUIRED;
         ReqParse->reasonPhrase = "Length Required";
         ReqParse->isFinished = true;
     }
+	else if (ReqParse->transferEncoding != "" && ReqParse->transferEncoding != "chunked")
+	{
+		ReqParse->statusCode = STATUS_NOT_IMPLEMENTED;
+		ReqParse->reasonPhrase = "Not Implemented";
+		ReqParse->isFinished = true;
+	}
 }
 
 /*
@@ -715,13 +705,14 @@ void	Request::handleRequest(int sd, Config* conf)
 {
     t_request               ReqParse;
 
-    ReqParse = isCompletedRequest(_reqStr);//rename this variable
+    ReqParse = isCompletedRequest(_reqStr);
     if (!ReqParse.isFinished) return ;
 	// std::cout << "I GET HERE" << std::endl;
     _traitRequest(ReqParse);
     this->setLocation(sd, conf);
+	this->SearchErrors();
+	// IF (THIS->ISFINISHED && THIS->STATUSCODE > -1) => YOU DON'T NEED TO DO ANYTHING , JUST RETURN ERROR PAGE!!! 
 	// PrintMap(conf->getSdToClient());
-    // To see later what to return
 }
 
 void	Request::setLocation(int sd, Config* conf)
@@ -797,14 +788,15 @@ void                                                Request::setReasonPhrase(std
 void                                                Request::setHost(std::string value){ _host = value; }
 void												Request::setResponse(Response *response) { _response = response; }
 
-//Test Functions
+
+//For Testing Only
 void    Request::printVectorOfPairs(std::vector<std::pair<std::string, std::string> >           Body)
 {
     std::vector<std::pair<std::string, std::string> >::iterator           iter;
     for (iter = Body.begin(); iter != Body.end(); iter++)
         std::cout << "Key : " << iter->first << " | Value : " << iter->second << std::endl;
 }
-
+// For Testing Only
 void PrintData(std::vector<std::vector<std::string> >  RequestData)
 {
     for (std::vector<std::vector<std::string> >::iterator iter = RequestData.begin() ; iter != RequestData.end(); iter++)
