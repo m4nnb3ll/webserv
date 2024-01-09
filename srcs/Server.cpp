@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbouyahy <mbouyahy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:32:00 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 22:32:00 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/09 13:45:30 by mbouyahy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,11 @@ void	Server::setErrorPages(int errCode, const std::string& errPage)
 void	Server::setMaxBodySize(size_t maxBodySize)
 {
 	_maxBodySize = maxBodySize;
+}
+
+size_t	Server::getMaxBodySize() const
+{
+	return (_maxBodySize);
 }
 
 void Server::addLocation(Location *location)
