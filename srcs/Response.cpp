@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:55 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/08 23:19:38 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/09 11:35:20 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -406,11 +406,18 @@ void	Response::_checkAutoIndex()
 
 void	Response::_uploadFile()
 {
-	std::ofstream file("uploads/filename");
+	if (!_request->files.size())
+	{
+		_finishWithCode(STATUS_INTERNAL_ERR);
+		return ;
+	}
+
+	std::string	filename = "uploads/" + _request->files[0].first;
+	std::ofstream file(filename);
 
 	if (file.is_open())
 	{
-		file << _request->body;
+		file << _request->files[0].second;
 		file.close();
 		_finishWithCode(STATUS_CREATED);
 	}
