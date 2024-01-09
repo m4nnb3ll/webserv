@@ -239,7 +239,7 @@ void Request::SearchErrors()//Temp Function
     if (_method != "POST" && _method != "GET" && _method != "DELETE")
         _statusCode = STATUS_NOT_ALLOWED;
 	else if (this->body.size() > _location->getServer()->getMaxBodySize())
-		_statusCode = STATUS_REQUEST_ENTITY_TOO_LARGE;
+		_statusCode = STATUS_TOO_LARGE;
 }
 
 /*
@@ -545,7 +545,7 @@ void initializeRequest(t_request  *ReqParse, std::string data)
     ReqParse->query 			= "";
     ReqParse->BodySize 			= 0;
     ReqParse->contentLength 	= 0;
-    ReqParse->statusCode 		= -1;
+    ReqParse->statusCode 		= 0;
     ReqParse->queryStringParam.clear();
     ReqParse->body.clear();
     ReqParse->header.clear();

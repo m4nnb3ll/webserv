@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/04 14:35:22 by asekkak           #+#    #+#             */
-/*   Updated: 2024/01/09 12:30:01 by asekkak          ###   ########.fr       */
+/*   Updated: 2024/01/09 16:32:59 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,19 @@ class Config;
 class Cgi
 {
     public:
-            Cgi(Response *response/* , Location *config */); // sets up env according to the request
+			Cgi(Response* response, std::string cgiPath, std::string filePath); // sets up env according to the request
             ~Cgi();
-            char **_getEnvAsCstrArray() const;
-            std::string execute(); // executes cgi and returns body
+            char**		_getEnvAsCstrArray() const;
+            std::string	execute(); // executes cgi and returns body
 
     private:
-            void _initEnv(Request *request, Response *response/* , Location *config */);
-            std::map<std::string, std::string> _env;
-            std::string _body;
+            void								_initEnv();
+			std::string							_addContentLength(const std::string&);
+            std::map<std::string, std::string>	_env;
+            std::string							_body;
+			std::string							_cgiPath;
+			std::string							_filePath;
+			Response							*_response;
 };
 
 #endif

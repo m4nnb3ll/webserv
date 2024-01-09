@@ -3,18 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:55 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/09 13:24:55 by asekkak          ###   ########.fr       */
+/*   Updated: 2024/01/09 18:01:31 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
 Response::Response(Request* request)
-	:	_request(request), _isFinished(false), _statusCode(STATUS_SUCCESS)
+	:	_request(request), _isFinished(false), _statusCode(0)
 {
+	if (request->getStatusCode())
+		_finishWithCode(static_cast<enum e_status_code>(request->getStatusCode()));
 	_checkLocation();
 	_checkResource();
 	_checkCgi();
@@ -91,6 +93,8 @@ std::string	Response::_getStatusCodeMsg()
 {
 	switch (_statusCode)
 	{
+		case 200:
+			return ("OK");
 		case 201:
 			return ("Created");
 		case 204:
@@ -139,6 +143,7 @@ std::string	Response::_getErrFilePath()
 
 void	Response::_errorCheck()
 {
+	// std::cout << RED << "I GOT HERE" << RESET_COLOR << std::endl;
 	if (_statusCode >= 400 && _statusCode < 600)
 	{
 		std::string			errFilePath = _getErrFilePath();
@@ -156,6 +161,7 @@ void	Response::_errorCheck()
 		finalStream << fileContent.str();
 		file.close();
 		_content = finalStream.str();
+		// std::cout << RED << "I GOT HERE" << RESET_COLOR << std::endl;
 	}
 }
 
@@ -189,6 +195,7 @@ void	Response::_redirect()
 
 	_statusCode = STATUS_MOVED;
 	oSS << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
+	std::cout << "_request->getLocation()->getRedirectPath() is:" << _request->getLocation()->getRedirectPath() << std::endl;
 	oSS << "Location: " << _request->getLocation()->getRedirectPath() << "\r\n";
 	oSS << "Content-Length: 0\r\n";
 	oSS << "\r\n";
@@ -273,54 +280,16 @@ bool	Response::_dirHasIndexFiles(std::vector<std::string> indexes)
 	return (false);
 }
 
-std::string addContentLength(const std::string& httpResponse)
+void	Response::_runCgi(std::string cgiPath, std::string filePath)
 {
-    // Find the position of the first double CRLF ("\r\n\r\n") indicating the end of headers
-    size_t headerEndPos = httpResponse.find("\r\n\r\n");
-
-    // Extract headers and body
-    std::string headers = httpResponse.substr(0, headerEndPos);
-    std::string body = httpResponse.substr(headerEndPos + 4); // Skip "\r\n\r\n"
-
-    // Split headers into lines
-    std::istringstream headersStream(headers);
-    std::vector<std::string> headerLines;
-    std::string line;
-    while (std::getline(headersStream, line)) {
-        if (!line.empty()) {
-            headerLines.push_back(line);
-        }
-    }
-
-    // Add the additional header
-    std::ostringstream oSS;
-    oSS << "Content-Length: " << body.size();
-    headerLines.push_back(oSS.str());
-
-    // Reconstruct headers
-    std::ostringstream modifiedHeaders;
-    for (size_t i = 0; i < headerLines.size(); ++i) {
-        modifiedHeaders << headerLines[i];
-        if (i < headerLines.size() - 1) {
-            modifiedHeaders << "\r\n"; // Correctly use CRLF for line endings
-        }
-    }
-
-    // Reconstruct the modified response
-    return modifiedHeaders.str() + "\r\n\r\n" + body;
-}
-
-void	Response::_runCgi()
-{
-	Cgi cgi = Cgi(this);
+	Cgi cgi = Cgi(this, cgiPath, filePath);
 	std::ostringstream	oSS;
 
-	_statusCode = STATUS_SUCCESS;
-	oSS << "HTTP/1.1" << " " << _statusCode << " " << "OK" << "\r\n";
-	oSS << addContentLength(cgi.execute());
-	_content = oSS.str();
-	std::cout << RED << _content << RESET_COLOR << std::endl;
-	_isFinished = true;
+	// std::cout << RED << "I GOT HERE first" << RESET_COLOR << std::endl;
+	_content = cgi.execute();
+	_content[0] == '\0'
+		?	_finishWithCode(STATUS_INTERNAL_ERR)
+		:	_finishWithCode(STATUS_SUCCESS);
 }
 
 bool	Response::_extensionMatch(const std::string& extension, const std::string& filename)
@@ -343,12 +312,19 @@ void	Response::_checkCgi()
 	cgi = _request->getLocation()->getCgi();
 	if (cgi.size())
 	{
+		// exit(1);
+		// it = cgi.begin();
+		// std::cout << << std::endl
 		if (_resourceType == RT_FILE)
 		{
 			// _extensionMatch
 			for (it = cgi.begin(); (it != cgi.end()) && !match ; ++it)
 				match = _extensionMatch(it->first, _resource);
-			if (match) _runCgi();
+			if (match)
+			{
+				if (it == cgi.end()) it--;
+				_runCgi(it->second, _resource + _index);
+			}
 		}
 		else
 		{
@@ -356,9 +332,14 @@ void	Response::_checkCgi()
 			{
 				// thinking about placing the following logic in a function
 				// or place the extension check inside the _runCgi function
-				for (it = cgi.begin(); (it != cgi.end()) && !match ; ++it)
+				for (it = cgi.begin(); (it != cgi.end()) && !match ; it++)
 					match = _extensionMatch(it->first, _resource + _index);
-				if (match) _runCgi();
+				if (match)
+				{
+					if (it == cgi.end()) it--; //in case reached the end and match
+					std::cout << "The first and second are: " << it->first << "---" << it->second << std::endl;
+					_runCgi(it->second, _resource + _index);
+				}
 			}
 
 		}
