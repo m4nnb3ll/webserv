@@ -1,35 +1,35 @@
 #include "Cgi.hpp"
 
-Cgi::Cgi(Request *request, Location *config)
+Cgi::Cgi(Response* response)
 {
     // this->_body = request->_getBody(); 
     std::cout << "cgi\n"; 
 
-    this->_initEnv(request, config);
+    this->_initEnv(response->getRequest(), response);
 }
 
 Cgi::~Cgi() {}
 
-void Cgi::_initEnv(Request *request, Location *config)
+void Cgi::_initEnv(Request *request, Response *response)
 {
-    (void)config;
     char cwd[100];
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
         perror("getcwd");
     }
-    std::cout << "cwd" << std::string(cwd)  + request->_getRequestURI();
-    std::stringstream oss;
-    oss << request->_bodySize;
+    std::cout << "cwd" << std::string(cwd)  + request->getUri();
+    std::cout << RED << ">>" << std::string(cwd) + "/" + response->getResource() << "<<" << RESET_COLOR << std::endl;
+	// std::stringstream oss;
+    // oss << request->bodySize;
     _env["REDIRECT_STATUS"] = "200"; // some cgi script may check this variable to use this status
     _env["GATEWAY_INTERFACE"] = "CGI/1.1";
-    _env["SCRIPT_NAME"] = request->_getRequestURI(); // take a virtual path /myapp/cgi/script.py
-    _env["SCRIPT_FILENAME"] = std::string(cwd) + request->_getRequestURI();            // path of file.php
-    _env["REQUEST_METHOD"] = request->_getMethod();
-    _env["CONTENT_LENGTH"] = oss.str().size();                    // take body
-    _env["CONTENT_TYPE"] = request->_getHeader()["Content-Type"]; // --> header : Content Type
-    _env["PATH_INFO"] = request->_getRequestURI();
-    _env["QUERY_STRING"] = request->_getQuery();
-    _env["REQUEST_URI"] = request->_getRequestURI() + request->_getQuery(); // uri complet must add when morad push it project
+    _env["SCRIPT_NAME"] = std::string(cwd) + "/" + response->getResource(); // take a virtual path /myapp/cgi/script.py
+    _env["SCRIPT_FILENAME"] = std::string(cwd) + "/" + response->getResource();            // path of file.php
+    _env["REQUEST_METHOD"] = request->getMethod();
+    _env["CONTENT_LENGTH"] = request->getContentLength();                    // take body
+    _env["CONTENT_TYPE"] = request->getHeader()["Content-Type"]; // --> header : Content Type
+    _env["PATH_INFO"] = request->getUri();
+    _env["QUERY_STRING"] = request->getQuery();
+    _env["REQUEST_URI"] = request->getUri() + request->getQuery(); // uri complet must add when morad push it project
     _env["SERVER_PROTOCOL"] = "HTTP/1.1";
     _env["SERVER_SOFTWARE"] = "Weebserv/1.0";
     std::cout << "\n end  \n";
@@ -50,12 +50,13 @@ char **Cgi::_getEnvAsCstrArray() const
     return env;
 }
 
-std::string		Cgi::executeCgi(std::string file) {
+std::string		Cgi::execute()
+{
 	pid_t		pid;
 	char		**env;
 	std::string	newBody;
-    (void)file;
-    int pipes[2];
+    int 		pipes[2];
+
     pipe(pipes);
 	try {
 		env = this->_getEnvAsCstrArray();
@@ -110,6 +111,8 @@ std::string		Cgi::executeCgi(std::string file) {
 
 	if (!pid)
 		exit(0);
+
+
 
 	return (newBody);
 }

@@ -6,7 +6,7 @@
 /*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/04 14:35:22 by asekkak           #+#    #+#             */
-/*   Updated: 2024/01/04 15:30:03 by asekkak          ###   ########.fr       */
+/*   Updated: 2024/01/09 12:30:01 by asekkak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,13 +29,13 @@ class Config;
 class Cgi
 {
     public:
-            Cgi(Request *request, Location *config); // sets up env according to the request
+            Cgi(Response *response/* , Location *config */); // sets up env according to the request
             ~Cgi();
             char **_getEnvAsCstrArray() const;
-            std::string executeCgi(std::string file); // executes cgi and returns body
+            std::string execute(); // executes cgi and returns body
 
     private:
-            void _initEnv(Request *request, Location *config);
+            void _initEnv(Request *request, Response *response/* , Location *config */);
             std::map<std::string, std::string> _env;
             std::string _body;
 };

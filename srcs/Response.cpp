@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:55 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/09 11:35:20 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/09 13:24:55 by asekkak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,17 @@ bool	Response::isFinished() const
 std::string	Response::getContent() const
 {
 	return (_content);
+}
+
+Request*	Response::getRequest() const
+{
+	return (_request);
+}
+
+std::string	Response::getResource() const
+{
+	// temp
+	return (_resource + _index);
 }
 
 void	Response::_handleGet()
@@ -262,11 +273,53 @@ bool	Response::_dirHasIndexFiles(std::vector<std::string> indexes)
 	return (false);
 }
 
+std::string addContentLength(const std::string& httpResponse)
+{
+    // Find the position of the first double CRLF ("\r\n\r\n") indicating the end of headers
+    size_t headerEndPos = httpResponse.find("\r\n\r\n");
+
+    // Extract headers and body
+    std::string headers = httpResponse.substr(0, headerEndPos);
+    std::string body = httpResponse.substr(headerEndPos + 4); // Skip "\r\n\r\n"
+
+    // Split headers into lines
+    std::istringstream headersStream(headers);
+    std::vector<std::string> headerLines;
+    std::string line;
+    while (std::getline(headersStream, line)) {
+        if (!line.empty()) {
+            headerLines.push_back(line);
+        }
+    }
+
+    // Add the additional header
+    std::ostringstream oSS;
+    oSS << "Content-Length: " << body.size();
+    headerLines.push_back(oSS.str());
+
+    // Reconstruct headers
+    std::ostringstream modifiedHeaders;
+    for (size_t i = 0; i < headerLines.size(); ++i) {
+        modifiedHeaders << headerLines[i];
+        if (i < headerLines.size() - 1) {
+            modifiedHeaders << "\r\n"; // Correctly use CRLF for line endings
+        }
+    }
+
+    // Reconstruct the modified response
+    return modifiedHeaders.str() + "\r\n\r\n" + body;
+}
+
 void	Response::_runCgi()
 {
-	// cgi logic will go here
-	std::cout << BLUE << "CGI RUNNING..." << RESET_COLOR << std::endl;
+	Cgi cgi = Cgi(this);
+	std::ostringstream	oSS;
+
 	_statusCode = STATUS_SUCCESS;
+	oSS << "HTTP/1.1" << " " << _statusCode << " " << "OK" << "\r\n";
+	oSS << addContentLength(cgi.execute());
+	_content = oSS.str();
+	std::cout << RED << _content << RESET_COLOR << std::endl;
 	_isFinished = true;
 }
 

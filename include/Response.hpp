@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: asekkak <asekkak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:04 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 16:48:18 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/09 12:28:49 by asekkak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <ft_common.h>
 #include "Request.hpp"
+#include "Cgi.hpp"
 
 class	Request;
 
@@ -44,6 +45,8 @@ class Response
 		Response(Request* request);
 		bool		isFinished() const;
 		std::string	getContent() const;
+		std::string	getResource() const;
+		Request	*getRequest() const;
 	private:
 		Request					*_request;
 		bool					_isFinished;
