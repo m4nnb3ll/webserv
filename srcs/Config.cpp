@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:37 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/08 23:09:41 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:53:25 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@ Config::~Config()
 	}
 	for (std::set<ServersSocket*>::iterator it = ptrs.begin(); it != ptrs.end(); it++)
 		delete *it;
+    for (std::map<int, Client*>::iterator it = _sdToClient.begin(); it != _sdToClient.end(); ++it)
+		delete (it->second);
 }
 
 Config::Config(const std::string &input)
@@ -341,7 +343,7 @@ void	Config::_rmPollfd(int sd)
 			break ;
 		}
 	}
-	close(sd);
+	if (close(sd) == 0) std::cout << "sd closed" << std::endl;
 }
 
 void	Config::_initSockets()

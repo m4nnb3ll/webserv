@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:55 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/09 18:01:31 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:13:31 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,7 +265,7 @@ bool	Response::_dirHasIndexFiles(std::vector<std::string> indexes)
 
 	dir = opendir(_resource.c_str());
 	if (!dir)
-		throw (std::runtime_error("Error opening the dir\n"));
+		return (false);
 	while ((entry = readdir(dir)))
 		dirFiles.push_back(entry->d_name);
 	for (size_t i = 0; i < indexes.size(); i++)
@@ -274,9 +274,11 @@ bool	Response::_dirHasIndexFiles(std::vector<std::string> indexes)
 			!= dirFiles.end())
 		{
 			_index = *indexIt;
+			closedir(dir);
 			return (true);
 		}
 	}
+	closedir(dir);
 	return (false);
 }
 
@@ -447,7 +449,7 @@ void	Response::_uploadFile()
 	}
 
 	std::string	filename = "uploads/" + _request->files[0].first;
-	std::ofstream file(filename);
+	std::ofstream file(filename.c_str());
 
 	if (file.is_open())
 	{

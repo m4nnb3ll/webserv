@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:39:10 by mbouyahy          #+#    #+#             */
-/*   Updated: 2024/01/07 22:06:15 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:48:42 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ Client::~Client()
 
 void	Client::createRequest(std::string buffer)
 {
+	delete	(_request);
 	_request = new Request(buffer);
 }
 
@@ -34,8 +35,12 @@ void	Client::deleteRequest()
 
 std::string	Client::createResponse()
 {
+	std::string	content;
+
 	Response* response = new Response(_request);
-	return (response->getContent());
+	content = response->getContent();
+	delete response;
+	return (content);
 }
 
 Request*	Client::getRequest() const

@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:00 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/08 23:15:49 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:50:55 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,8 @@ void Config::_sendResponse(int sd)
 		int ret = send(sd, content.c_str(), content.size(), 0);
 		if (ret == -1) {
 			_rmPollfd(sd);
-			_sdToClient.erase(sd);
+			delete	_sdToClient[sd];
+			_sdToClient[sd] = NULL;
 			std::cout << "writing: client[" << sd <<"] disconnected" << std::endl;
 			return ;
 		}
@@ -115,6 +116,11 @@ void Config::run()
 				if ((sS = _sdToServersSocket[sd]) && sS->getFd() == sd)
 					_unplugSocket(sS);
 				_rmPollfd(sd);
+				if (_sdToClient.find(sd) != _sdToClient.end())
+				{
+					delete (_sdToClient[sd]);
+					_sdToClient[sd] = NULL;
+				}
 				std::cerr << "POLL QUIT " << sd << std::endl;
 			}
 			else if (_pollFds[i].revents & POLLIN)
