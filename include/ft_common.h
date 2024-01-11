@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:06 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/09 17:20:11 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/11 18:36:35 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@
 # include <map>
 # include <netinet/in.h> // For struct sockaddr_in
 # include <poll.h>
-# include <arpa/inet.h> // Just for debug printing, remove later
 # include <fcntl.h>
 # include <unistd.h>
 # include <cstdlib>
@@ -31,8 +30,6 @@
 # include <sys/wait.h>
 # include <algorithm>
 # include <set>
-
-// DONT FORGET TO CHECK THE MAKEFILE!!!
 
 # define RED		"\033[0;31m"
 # define GREEN		"\033[0;32m"

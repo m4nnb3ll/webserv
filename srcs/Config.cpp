@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:37 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/10 15:53:25 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/11 22:33:18 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void	initMimeTypes()
 		g_mimeTypes[extension] = mimeType;
     }
     file.close();
-	std::cout << RED << "initialized mime types" << RESET_COLOR << std::endl;
+	std::cout << BLUE << "[Info]: Initialized MimeTypes." << RESET_COLOR << std::endl;
 }
 
 // there is a problem with the freeing 
@@ -56,6 +56,7 @@ Config::Config(const std::string &input)
 
 	initMimeTypes();
 	_openConfig(input);
+	std::cout << BLUE << "[Info]: Opened the config file." << RESET_COLOR << std::endl;
 	while (std::getline(_configFile, line))
 	{
 		_ignoreComments(line);
@@ -66,7 +67,9 @@ Config::Config(const std::string &input)
 		else
 			throw std::runtime_error("Unknown type in configuration file: " + line);
 	}
+	std::cout << BLUE << "[Info]: ✅ Finished parsing the config file." << RESET_COLOR << std::endl;
 	_initSockets();
+	std::cout << BLUE << "[Info]: 👂 Listening..." << RESET_COLOR << std::endl;
 }
 
 std::string&	Config::_ignoreComments(std::string& line)
@@ -328,11 +331,7 @@ void	Config::_addPollfd(int sd, short events)
 
 void	Config::_rmPollfd(int sd)
 {
-	/*test*/
-	// std::cout << YELLOW << "I GET INTO THE REMOVE" << RESET_COLOR << std::endl;
-	// delete _sdToServersSocket[sd];
 	_sdToServersSocket.erase(sd);
-	/*test*/
 	// remove from pollfds
 	for (std::vector<struct pollfd>::iterator it = _pollFds.begin();
 		it != _pollFds.end(); it++)
@@ -343,7 +342,7 @@ void	Config::_rmPollfd(int sd)
 			break ;
 		}
 	}
-	if (close(sd) == 0) std::cout << "sd closed" << std::endl;
+	close(sd);
 }
 
 void	Config::_initSockets()
@@ -383,7 +382,6 @@ std::map<int, Client*>	Config::getSdToClient() const
 
 void	Config::insertToSdToClient(std::pair<int, Client*> pair)
 {
-	// std::cout << RED << "INSERTION!!!" << RESET_COLOR << std::endl;
 	_sdToClient.insert(pair);
 }
 

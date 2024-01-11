@@ -13,8 +13,7 @@
 #include "Request.hpp"
 
 Request::Request(std::string buff)
-	:	_reqStr(buff), _location(NULL)
-{}
+	:	_reqStr(buff), _location(NULL) {}
 
 Request::~Request(){}
 
@@ -26,10 +25,7 @@ Request &Request::operator=(const Request &other)
     return (*this);
 }
 
-void	Request::appendStr(std::string buff) {
-	_reqStr += buff;
-	// std::cout << _reqStr << std::endl;
-}
+void	Request::appendStr(std::string buff) { _reqStr += buff; }
 
 /*
 the role of FormOne Function :
@@ -113,7 +109,8 @@ the role of HandleFiles Function :
     1- get the name and the content of the file
     2- store the name and the content of the file in a vector of pairs
 */
-std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
+std::vector<std::string>::iterator    HandleFiles(
+	Request *Req, std::vector<std::string>::iterator  iter, std::vector<std::string>   data)
 {
     size_t                                              begin;
     std::string                                         value;
@@ -133,8 +130,6 @@ std::vector<std::string>::iterator    HandleFiles(Request *Req, std::vector<std:
             iter+=3;
             for (; iter != data.end(); iter++)
             {
-                // if (*iter == "\n" || *iter == "\r")
-                //     continue;
                 if (*iter == Req->boundaryEnd || *iter == Req->boundaryBegin)
                 {
                     Req->isFinished = true;
@@ -169,8 +164,7 @@ void FormTwo(Request *Req)
             iter++;
             if (isFile(iter, data))
             {
-				std::cout << "FILE" << std::endl; 
-                iter = HandleFiles(Req, iter, data);//handle files
+                iter = HandleFiles(Req, iter, data);
                 if (*iter == Req->boundaryBegin)
                     iter--;
             }
@@ -304,7 +298,8 @@ bool    isCompletedHeader(t_request *ReqParse)
     begin = ReqParse->data.find("\r\n\r\n");
     if (begin != std::string::npos)
     {
-        std::string str = ReqParse->data.substr(0, begin + 2);//i add 2 HERE FOR RESOLVE THE PROBLEM OF THE END OF THE HEADER!!!!
+		//i add 2 HERE FOR RESOLVE THE PROBLEM OF THE END OF THE HEADER!!!!
+        std::string str = ReqParse->data.substr(0, begin + 2);
         ReqParse->HeaderInStr += str;
         return (true);
     }
@@ -328,7 +323,7 @@ void setupHeader(t_request *ReqParse, std::string Line)
     if (begin == std::string::npos)
         return ;
     Key = Line.substr(0, begin);
-    Value = Line.substr(begin + 2, Line.size());//skep (:Space)
+    Value = Line.substr(begin + 2, Line.size());//skip (:Space)
     ReqParse->header.insert(std::make_pair(Key, Value));
 }
 
@@ -357,7 +352,6 @@ the role of specialGetContentType Function :
 */
 void specialGetContentType(t_request *ReqParse, std::string Value)
 {
-    //change the structure of the function
     size_t begin;
     begin = Value.find(";");
     if (begin != std::string::npos)
@@ -412,17 +406,16 @@ void getQueryString(t_request *ReqParse)
     size_t          UriEnd;
     std::string     Uri;
 
-    //change the structure of the function
     begin = ReqParse->uri.find("?");
     if (begin > ReqParse->uri.size())
         UriEnd = ReqParse->uri.size();
     else
         UriEnd = begin;
-    for(size_t i = 0; i < UriEnd; i++)//check it later
+    for(size_t i = 0; i < UriEnd; i++)
         Uri += ReqParse->uri[i];
     if (begin <= ReqParse->uri.size())
     {
-        for(size_t i = begin + 1; i < ReqParse->uri.size(); i++)//check it later
+        for(size_t i = begin + 1; i < ReqParse->uri.size(); i++)
             ReqParse->query += ReqParse->uri[i];
     }
     takeQueryStringParam(ReqParse);
@@ -475,7 +468,7 @@ void obtainRequestLine(t_request *ReqParse)
     {
         std::string str = ReqParse->HeaderInStr.substr(0, begin);
         ReqParse->requestLine += str;
-        ReqParse->HeaderInStr.erase(0, begin + 2);//check it later
+        ReqParse->HeaderInStr.erase(0, begin + 2);
     }
 }
 
@@ -504,7 +497,7 @@ the role of isInvalidUri Function :
 */
 void    isInvalidUri(t_request *ReqParse)
 {
-    if (ReqParse->uri.size() > 2048)//I'm Not Sure About That
+    if (ReqParse->uri.size() > 2048)
     {
         ReqParse->statusCode = STATUS_URI_TOO_LONG;
         ReqParse->reasonPhrase = "URI Too Long";
@@ -567,7 +560,7 @@ void updateHeader(t_request *ReqParse)
             obtainRequestLine(ReqParse);
             getHeaderAsPairVector(ReqParse);
             getHeaderVariables(ReqParse);
-            isInvalidUri(ReqParse);//if found error => pIsFinished = true;
+            isInvalidUri(ReqParse);
             if (ReqParse->method == "GET" || ReqParse->method == "DELETE")
                 ReqParse->isFinished = true;
             ReqParse->hasHeader = true;
@@ -700,19 +693,15 @@ the role of HandleRequest Function :
     2- if the request is completed => create a new Client and add it to the map
     3- if the request is not completed => return false
 */
-// MAKE SURE TO MAKE THIS PART OF THE Request class @mourad
 void	Request::handleRequest(int sd, Config* conf)
 {
     t_request               ReqParse;
 
     ReqParse = isCompletedRequest(_reqStr);
     if (!ReqParse.isFinished) return ;
-	// std::cout << "I GET HERE" << std::endl;
     _traitRequest(ReqParse);
     this->setLocation(sd, conf);
 	this->SearchErrors();
-	// IF (THIS->ISFINISHED && THIS->STATUSCODE > -1) => YOU DON'T NEED TO DO ANYTHING , JUST RETURN ERROR PAGE!!! 
-	// PrintMap(conf->getSdToClient());
 }
 
 void	Request::setLocation(int sd, Config* conf)
@@ -742,15 +731,7 @@ Location	*Request::getLocation() const
 	return (_location);
 }
 
-std::string/*will retrieve the content of the body*/		Request::getContent() const
-{
-	// for test only
-	return ("SIMPLE TEXT MESSAGE\n");
-}
-
-/*
-    Getters
-*/
+// Getters
 std::vector<std::pair<std::string, std::string> >   Request::getQueryStringParam() const { return (_queryStringParam); }
 std::vector<std::pair<std::string, std::string> >   Request::getBody() const { return (_body); }
 std::map<std::string, std::string>                  Request::getHeader() const { return (_header); }
@@ -768,9 +749,7 @@ std::string                                         Request::getReasonPhrase() c
 std::string                                         Request::getHost() const { return (_host); }
 Response*											Request::getResponse() const { return (_response); }
 
-/*
-    Setters
-*/
+// Setters
 void                                                Request::setTransferEncoding(std::string value) { _transferEncoding = value;  }
 void                                                Request::setQueryStringParam(std::vector<std::pair<std::string, std::string> > value) {_queryStringParam = value; }
 void                                                Request::setBody(std::vector<std::pair<std::string, std::string> > value){ _body = value; }
@@ -787,19 +766,3 @@ void                                                Request::setQuery(std::strin
 void                                                Request::setReasonPhrase(std::string value) { _reasonPhrase = value; }
 void                                                Request::setHost(std::string value){ _host = value; }
 void												Request::setResponse(Response *response) { _response = response; }
-
-
-//For Testing Only
-void    Request::printVectorOfPairs(std::vector<std::pair<std::string, std::string> >           Body)
-{
-    std::vector<std::pair<std::string, std::string> >::iterator           iter;
-    for (iter = Body.begin(); iter != Body.end(); iter++)
-        std::cout << "Key : " << iter->first << " | Value : " << iter->second << std::endl;
-}
-// For Testing Only
-void PrintData(std::vector<std::vector<std::string> >  RequestData)
-{
-    for (std::vector<std::vector<std::string> >::iterator iter = RequestData.begin() ; iter != RequestData.end(); iter++)
-        for (std::vector<std::string>::iterator SimpleIter = iter->begin() ; SimpleIter != iter->end(); SimpleIter++)
-            std::cout << "* : " << *SimpleIter << std::endl;
-}

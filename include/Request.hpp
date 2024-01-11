@@ -122,10 +122,6 @@ class Request
         void													prepareResponse();
         void												       SearchErrors();
 
-
-        //Functions For Testing Only
-        void												       printVectorOfPairs(std::vector<std::pair<std::string, std::string> >    Body);
-
         //Variables
         std::vector<std::pair<std::string, std::string> >       files;
         std::vector<std::string>                                lines;

@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:41 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 22:31:41 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/11 22:40:24 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@ void	Location::setUploadDir(std::istringstream &iss)
 	if (iss.fail() || !iss.eof())
 		throw(std::runtime_error("error in upload_dir"));
 	if (stat(uploadDir.c_str(), &info) != 0)
-        throw(std::runtime_error("Error in `upload_dir`, make sure that the upload_dir does exist!"));
+		throw(std::runtime_error("Error in `upload_dir`, make sure that the upload_dir does exist!"));
 	if (!(info.st_mode & S_IFDIR))
 		throw(std::runtime_error("the upload_dir is not a directory!"));
 	_uploadDir = uploadDir;

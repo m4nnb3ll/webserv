@@ -6,7 +6,7 @@ RESET_COLOR			:=	\033[0m
 
 NAME = webserv
 
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98 # UNCOMMENT LATER !!!! -std=c++98
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 FSANITIZE = -g3 -fsanitize=address
 
 FILES =	main.cpp \
@@ -20,7 +20,6 @@ FILES =	main.cpp \
 		Request.cpp \
 		Response.cpp \
 		Cgi.cpp \
-		utils/autoindex.cpp  \
 
 INCLUDE_DIR = include
 
@@ -38,7 +37,7 @@ $(NAME): $(OBJS)
 
 ${OBJS_DIR}/%.o: ${SRCS_DIR}/%.cpp
 	@mkdir -p ${@D}
-	@printf "${YELLOW}Generate %-38.38s\r${RESET_COLOR}" $@
+	@printf "${YELLOW}-> Generate %-38.38s\r${RESET_COLOR}" $@
 	@c++ $(CXXFLAGS) -I $(INCLUDE_DIR) $(FSANITIZE) -c $< -o $@
 
 clean:

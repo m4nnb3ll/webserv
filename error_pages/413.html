@@ -1,11 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>error 413</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error 413 - Forbidden</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        h1 {
+            margin-top: 100px;
+            font-size: 4em;
+            color: #dc3545; /* Bootstrap's red color */
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        a {
+            color: #007bff; /* Bootstrap's blue color */
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
-	<h1>error 413!</h1>
+	<h1>413 - Content Too large!</h1>
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100" height="100" fill="#dc3545">
+		<circle cx="12" cy="12" r="10" stroke="#dc3545" stroke-width="2" fill="none"/>
+		<line x1="4" y1="20" x2="20" y2="4" stroke="#dc3545" stroke-width="2"/>
+	</svg>
+    <p>The Content is Too large...<a href="/">Go back to the home page</a>.</p>
 </body>
+
 </html>

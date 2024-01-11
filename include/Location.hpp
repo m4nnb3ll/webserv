@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:09 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/07 22:31:10 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/11 18:36:44 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ class Location
 		int									_redirectCode;
 		Server*								_server;
 		std::map<std::string, std::string>	_cgi;
-		// thinking about adding a cgi bool to optimize
 		std::string							_uploadDir;
 	public :
 		Location(Server*);

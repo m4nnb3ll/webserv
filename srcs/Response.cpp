@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:55 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/10 15:13:31 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/11 23:29:57 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ Response::Response(Request* request)
 	_checkCgi();
 	_checkMethod();
 	_errorCheck();
-	std::cout << "The status code is: " << YELLOW << _statusCode << RESET_COLOR << std::endl;
 }
 
 bool	Response::isFinished() const
@@ -42,7 +41,6 @@ Request*	Response::getRequest() const
 
 std::string	Response::getResource() const
 {
-	// temp
 	return (_resource + _index);
 }
 
@@ -51,10 +49,7 @@ void	Response::_handleGet()
 	if (_isFinished)
 		return ;
 	if (_resourceType == RT_FILE)
-	{
-		// std::cout << "the request file is: " << _resource << std::endl;
 		_returnFile(_resource);
-	}
 	else
 	{
 		_checkDirURI();
@@ -87,7 +82,6 @@ void	Response::_handleDelete()
 			_tryDeleteDir();
 	}
 }
-
 
 std::string	Response::_getStatusCodeMsg()
 {
@@ -143,7 +137,6 @@ std::string	Response::_getErrFilePath()
 
 void	Response::_errorCheck()
 {
-	// std::cout << RED << "I GOT HERE" << RESET_COLOR << std::endl;
 	if (_statusCode >= 400 && _statusCode < 600)
 	{
 		std::string			errFilePath = _getErrFilePath();
@@ -152,25 +145,15 @@ void	Response::_errorCheck()
 		std::ostringstream	fileContent;
 
 		fileContent << file.rdbuf(); // Read the file content into a stringstream
-		// Print HTTP response headers
 		finalStream << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
 		finalStream << "Content-Length: " << fileContent.str().length() << "\r\n";
 		finalStream << "Content-Type: text/html\r\n";
 		finalStream << "\r\n"; // Empty line to separate headers from content
-		// Print file content
 		finalStream << fileContent.str();
 		file.close();
 		_content = finalStream.str();
-		// std::cout << RED << "I GOT HERE" << RESET_COLOR << std::endl;
 	}
 }
-
-// bool	Response::isError()
-// {
-// 	if (_statusCode >= 400 && _statusCode < 600)
-// 		return (true);
-// 	return (false);
-// }
 
 void	Response::_finishWithCode(enum e_status_code code)
 {
@@ -186,6 +169,9 @@ void	Response::_finishWithCode(enum e_status_code code)
 		oSS << "\r\n";
 		_content = oSS.str();
 	}
+	(_statusCode >= 400 && _statusCode < 600)
+		?	std::cout << RED << "[ERROR]: " << _statusCode << " " << _getStatusCodeMsg() << RESET_COLOR << "\n"
+		:	std::cout << GREEN << "[RESPONSE]: " << _statusCode << " " << _getStatusCodeMsg() << RESET_COLOR << "\n";
 	_isFinished = true;
 }
 
@@ -195,11 +181,11 @@ void	Response::_redirect()
 
 	_statusCode = STATUS_MOVED;
 	oSS << "HTTP/1.1" << " " << _statusCode << " " << _getStatusCodeMsg() << "\r\n";
-	std::cout << "_request->getLocation()->getRedirectPath() is:" << _request->getLocation()->getRedirectPath() << std::endl;
 	oSS << "Location: " << _request->getLocation()->getRedirectPath() << "\r\n";
 	oSS << "Content-Length: 0\r\n";
 	oSS << "\r\n";
 	_content = oSS.str();
+	std::cout << WHITE << "[REDIRECTION]: " << _statusCode << " " << _getStatusCodeMsg() << RESET_COLOR << "\n";
 	_isFinished = true;
 }
 
@@ -210,10 +196,7 @@ void	Response::_checkLocation()
 	if (_isFinished) return ;
 	location = _request->getLocation();
 	if (!location)
-	{
-		std::cout << "couldn't find the location" << std::endl;
 		_finishWithCode(STATUS_NOT_FOUND);
-	}
 	else if (location -> getRedirect())
 		_redirect();
 	else
@@ -243,13 +226,10 @@ void	Response::_checkResource()
 	struct stat	fileStat;
 	std::string resourcePath;
 
-	if (_isFinished) return ; // will check this later
+	if (_isFinished) return ;
 	_resource = _request->getLocation()->getRootPath() + _request->getUri();
 	if (stat(_resource.c_str(), &fileStat) != 0)
-	{
-		std::cout << "couldn't find the resource" << " " << _resource << std::endl;
 		_finishWithCode(STATUS_NOT_FOUND);
-	}
 	else if (S_ISDIR(fileStat.st_mode))
 		_resourceType = RT_DIR;
 	else
@@ -287,7 +267,6 @@ void	Response::_runCgi(std::string cgiPath, std::string filePath)
 	Cgi cgi = Cgi(this, cgiPath, filePath);
 	std::ostringstream	oSS;
 
-	// std::cout << RED << "I GOT HERE first" << RESET_COLOR << std::endl;
 	_content = cgi.execute();
 	_content[0] == '\0'
 		?	_finishWithCode(STATUS_INTERNAL_ERR)
@@ -303,48 +282,33 @@ bool	Response::_extensionMatch(const std::string& extension, const std::string& 
     return (false); // No extension found in filename
 }
 
+void	Response::_checkCgiExtension(
+	const std::map<std::string, std::string>& cgi, const std::string& filename)
+{
+	bool	match = false;
+	std::map<std::string, std::string>::const_iterator	it;
+
+	for (it = cgi.begin(); (it != cgi.end()) && !match ; ++it)
+		match = _extensionMatch(it->first, filename);
+	if (match)
+	{
+		if (it == cgi.end()) it--;
+		_runCgi(it->second, filename);
+	}
+}
+
 void	Response::_checkCgi()
 {
 	std::map<std::string, std::string>					cgi;
-	std::map<std::string, std::string>::const_iterator	it;
-	bool												match = false;
-	std::vector<std::string>							indexes;
 
 	if (_isFinished) return ;
 	cgi = _request->getLocation()->getCgi();
 	if (cgi.size())
 	{
-		// exit(1);
-		// it = cgi.begin();
-		// std::cout << << std::endl
 		if (_resourceType == RT_FILE)
-		{
-			// _extensionMatch
-			for (it = cgi.begin(); (it != cgi.end()) && !match ; ++it)
-				match = _extensionMatch(it->first, _resource);
-			if (match)
-			{
-				if (it == cgi.end()) it--;
-				_runCgi(it->second, _resource + _index);
-			}
-		}
-		else
-		{
-			if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
-			{
-				// thinking about placing the following logic in a function
-				// or place the extension check inside the _runCgi function
-				for (it = cgi.begin(); (it != cgi.end()) && !match ; it++)
-					match = _extensionMatch(it->first, _resource + _index);
-				if (match)
-				{
-					if (it == cgi.end()) it--; //in case reached the end and match
-					std::cout << "The first and second are: " << it->first << "---" << it->second << std::endl;
-					_runCgi(it->second, _resource + _index);
-				}
-			}
-
-		}
+			_checkCgiExtension(cgi, _resource);
+		else if (_dirHasIndexFiles(_request->getLocation()->getIndexes()))
+			_checkCgiExtension(cgi, _resource + _index);
 	}
 }
 
@@ -374,7 +338,7 @@ std::string	Response::_getMimeType(const std::string& filename)
         return "application/octet-stream";
 
     std::string extension = _strToLower(filename.substr(dotIndex));
-    // Look up the extension in the global map
+    // Look up the extension in the global map g_mimeTypes
     std::map<std::string, std::string>::iterator it = g_mimeTypes.find(extension);
     return (it != g_mimeTypes.end() ? it->second : "application/octet-stream");
 }
@@ -414,9 +378,14 @@ void	Response::_returnDirAutoIndex()
 		std::ostringstream	finalStream;
 		std::ostringstream	html;
 
-        html << "<html><head><title>Directory Index</title></head><body><h1>Index of The Directory</h1><ul>";
-        while ((entry = readdir(dir)) != NULL)
-            html << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>";
+        // html << "<html><head><title>Directory Index</title></head><body><h1>Index of The Directory</h1><ul>";
+        // while ((entry = readdir(dir)) != NULL)
+        //     html << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>";
+		// html << "</ul></body></html>";
+
+		html << "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Directory Index</title><style>body{font-family:'Arial',sans-serif;background-color:#f8f8f8;margin:0;padding:20px;}h1{color:#333;}ul{list-style-type:none;padding:0;}li{margin:10px 0;}a{color:#007bff;text-decoration:none;}a:hover{text-decoration:underline;}</style></head><body><h1>Index of The Directory</h1><ul>";
+		while ((entry = readdir(dir)) != NULL)
+			html << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>";
 		html << "</ul></body></html>";
 		closedir(dir);
 
@@ -448,7 +417,8 @@ void	Response::_uploadFile()
 		return ;
 	}
 
-	std::string	filename = "uploads/" + _request->files[0].first;
+	std::string	filename = _request->getLocation()->getUploadDir() + 
+		"/" + _request->files[0].first;
 	std::ofstream file(filename.c_str());
 
 	if (file.is_open())
@@ -485,19 +455,3 @@ void	Response::_tryDeleteDir()
 			:	_finishWithCode(STATUS_INTERNAL_ERR);
 	}
 }
-
-// Leave to later
-// void	Response::_checkFinalMsg()
-// {
-// 	int					statusCode;
-// 	std::ostringstream	oSS;
-
-// 	statusCode = _response.getStatusCode();
-// 	oSS << "HTTP/1.1" << " " << statusCode << " " << _response.genStatusMsg(statusCode) << "\r\n";
-// 	if (_response.getContent().empty())
-// 	{
-// 		_reponse.checkErrorContent();
-// 		oSS << _response.spreadErrorFile
-
-// 	}
-// }

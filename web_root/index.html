@@ -1,11 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Well-Styled Page</title>
+
+    <style>
+		*, ::before, ::after{box-sizing: border-box;}
+		html {
+			height: 100%;
+		}
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+			height: 100%;
+        }
+
+        header {
+            background-color: #333333;
+            color: #fff;
+            padding: 10px;
+        }
+
+        nav {
+            background-color: #00babc;
+            color: #fff;
+            padding: 10px;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+		nav a:hover {
+            background-color: white;
+			color: #00babc;
+            text-decoration: underline;
+        }
+
+        section {
+            padding: 20px;
+        }
+
+        article {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+        }
+		#last-section {
+			margin-bottom: 10rem;
+		}
+    </style>
 </head>
+
 <body>
-	<h1>simple test</h1>
+
+    <header>
+        <h1>A simple web page</h1>
+    </header>
+
+    <nav>
+        <a href="#">Home</a>
+        <a href="/potato/stones_beach.mp4">Video</a>
+        <a href="/potato/">Potato &lt;🥔&gt; ?</a>
+    </nav>
+
+    <section id="last-section">
+        <article>
+            <h2>Welcome to My Page</h2>
+            <p>This is a simple HTML page.</p>
+        </article>
+
+        <article>
+            <h2>About Me</h2>
+            <h2>MannBell, A software engineering student at 42.</h2>
+			<img style="max-width: 100%;" src="/index.png" alt="image"/>
+        </article>
+    </section>
+	<footer>
+        <p>&copy; 2024 My Well-Styled Page. All rights reserved.</p>
+    </footer>
 </body>
+
 </html>

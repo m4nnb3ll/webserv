@@ -31,7 +31,6 @@ void Cgi::_initEnv()
 	_env["REQUEST_URI"] = request->getUri() + request->getQuery(); // uri complet must add when morad push it project
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["SERVER_SOFTWARE"] = "Weebserv/1.0";
-	std::cout << "\n end  \n";
 }
 
 char **Cgi::_getEnvAsCstrArray() const
@@ -148,5 +147,6 @@ std::string	Cgi::execute()
 	for (size_t i = 0; env[i]; i++)
 		delete[] env[i];
 	delete[] env;
+	std::cout << WHITE << "[CGI]: Got response from CGI\n";
 	return ("HTTP/1.1 200 OK\r\n" + _addContentLength(newBody));
 }
