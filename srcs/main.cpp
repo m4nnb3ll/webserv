@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 22:31:43 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/11 21:52:18 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/11 23:42:33 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void	ft_sigint_handler(int c)
 {
 	(void)c;
 	g_sigint = 1;
-	std::cout << MAGENTA << "\r[HALT]: STOPPING THE SERVER...\n";
+	std::cout << MAGENTA << "\r[HALT]: STOPPING THE SERVER...\n" << RESET_COLOR;
 }
 
 int main(int ac, char **av)

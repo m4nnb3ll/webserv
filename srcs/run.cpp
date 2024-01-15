@@ -6,7 +6,7 @@
 /*   By: abelayad <abelayad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 16:10:00 by abelayad          #+#    #+#             */
-/*   Updated: 2024/01/11 22:35:03 by abelayad         ###   ########.fr       */
+/*   Updated: 2024/01/12 15:33:28 by abelayad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ void	Config::_addClient(int sd, ServersSocket* sS)
 	socklen_t client_addr_len = sizeof(client_addr);
 	int client_fd = accept(sd, (struct sockaddr *)&client_addr, &client_addr_len);
 	if (client_fd < 0) return;
+	std::cout << CYAN << "[Connection]: Accepted client with fd: " << sd << RESET_COLOR << std::endl;
 	_sdToServersSocket[client_fd] = sS;
 	_addPollfd(client_fd, POLLIN | POLLOUT);
 }
