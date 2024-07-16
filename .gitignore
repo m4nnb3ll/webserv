@@ -3,6 +3,7 @@ webserv
 *.vscode
 *.DS_Store
 *.mp4
-uploads/
+uploads/*
+!uploads/.gitkeep
 *.vscode/
 cgi-bin/
